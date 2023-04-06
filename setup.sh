@@ -131,7 +131,7 @@ function initialize_shell() {
     echo "$(which zsh)" | sudo tee -a /etc/shells 2>&1 > /dev/null
   fi
   if ! [ -z $(grep "zsh" "/etc/shells") ]; then
-    echo "Changing shell to fish"
+    echo "Changing shell to zsh"
     chsh -s $(which zsh)
   fi
   #echo "Installing Homebrew"
