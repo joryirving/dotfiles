@@ -1,0 +1,9 @@
+{{- $personal := false -}}{{/* true if this is a personal machine */}}
+
+{{- $personal = promptBool "personal" -}}
+
+format: yaml
+
+data:
+  name: "Jory Irving"
+  personal: {{ $personal | quote }}
