@@ -1,0 +1,27 @@
+function fish_greeting
+    # Greeting messages
+    set powered_msgs \
+        "River!" \
+        "Carl's Jr." \
+        "Satan" \
+        "Elmo" \
+        "Count Dookie" \
+        "SquareSpace" \
+        "that one guy with the hockey hair" \
+        "he who cannot be named" \
+        "the letters F U" \
+        "the ones who bought you into this world" \
+        "Rick Astley" \
+        "The Bee Movie" \
+        "NordVPN" \
+        "Depends" \
+        "Devin's left shoe" \
+        "GeoCities"
+
+    # Randomly pick a message
+    set chosen_msg (random)"%"(count $powered_msgs)
+    set chosen_msg $powered_msgs[(math $chosen_msg"+1")]
+
+    # Output it to the console
+    printf (set_color F90)"This terminal session brought to you in part by %s\n" $chosen_msg
+end

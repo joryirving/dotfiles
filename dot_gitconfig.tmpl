@@ -1,0 +1,72 @@
+[user]
+  name = Jory Irving
+  email = jory@jory.dev
+[gpg]
+  format = ssh
+[format]
+  signOff = true
+[core]
+  editor = nano
+  excludesfile = {{ .chezmoi.homeDir }}/.gitignore_global
+[commit]
+  gpgsign = true
+[merge]
+  ff = only
+[pull]
+  rebase = true
+[status]
+  submoduleSummary = false
+[tag]
+  forceSignAnnotated = true
+[init]
+  defaultBranch = main
+[filter "lfs"]
+  smudge = git-lfs smudge -- %f
+  process = git-lfs filter-process
+  required = true
+  clean = git-lfs clean -- %f
+[url "ssh://git@github.com/"]
+  pushInsteadOf = https://github.com/
+[push]
+  autoSetupRemote = true
+[alias]
+  yolo = !git commit -m \"$(curl -s whatthecommit.com/index.txt)\"
+  a = add
+  ap = add -p
+  amc = am --continue
+  b = branch
+  bm = branch --merged
+  bnm = branch --no-merged
+  c = commit
+  cl = clonr
+  ca = commit --amend
+  cane = commit --amend --no-edit
+  cf = commit --fixup
+  cm = commit --message
+  co = checkout
+  cob = checkout -b
+  com = checkout master
+  cp = cherry-pick
+  d = diff
+  dc = diff --cached
+  dom = diff origin/master
+  fo = fetch origin
+  g = grep --line-number
+  mbhom = merge-base HEAD origin/master
+  mff = merge --ff-only
+  ol = log --pretty=oneline
+  l = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+  pu = push
+  puf = push --force
+  pl = pull --rebase --autostash
+  r = restore
+  ra = rebase --abort
+  rc = rebase --continue
+  ri = rebase --interactive
+  rl = reflog
+  riom = rebase --interactive origin/master
+  rpo = remote prune origin
+  s = status -sb
+  ss = commit --message snapshot --no-gpg-sign
+  su = submodule update
+  wd = diff --patience --word-diff
