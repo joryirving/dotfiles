@@ -1,15 +1,13 @@
 [user]
   name = Jory Irving
   email = jory@jory.dev
-[gpg]
-  format = ssh
 [format]
-  signOff = true
+  signOff = false
 [core]
   editor = nano
   excludesfile = {{ .chezmoi.homeDir }}/.gitignore_global
 [commit]
-  gpgsign = true
+  gpgsign = false
 [merge]
   ff = only
 [pull]
