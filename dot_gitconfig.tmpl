@@ -1,32 +1,26 @@
 [user]
   name = Jory Irving
   email = jory@jory.dev
+[github]
+  user = joryirving
 [format]
   signOff = false
 [core]
   editor = nano
   excludesfile = {{ .chezmoi.homeDir }}/.gitignore_global
+[color]
+  diff = auto
+  status = auto
+  branch = auto
+  interactive = auto
+[merge]
+  summary = true
+[push]
+ default = current
+[help]
+	autocorrect = 1
 [commit]
   gpgsign = false
-[merge]
-  ff = only
-[pull]
-  rebase = true
-[status]
-  submoduleSummary = false
-[tag]
-  forceSignAnnotated = true
-[init]
-  defaultBranch = main
-[filter "lfs"]
-  smudge = git-lfs smudge -- %f
-  process = git-lfs filter-process
-  required = true
-  clean = git-lfs clean -- %f
-[url "ssh://git@github.com/"]
-  pushInsteadOf = https://github.com/
-[push]
-  autoSetupRemote = true
 [alias]
   yolo = !git commit -m \"$(curl -s whatthecommit.com/index.txt)\"
   a = add
@@ -56,6 +50,7 @@
   l = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
   pu = push
   puf = push --force
+  pushup = push --set-upstream origin
   pl = pull --rebase --autostash
   r = restore
   ra = rebase --abort
@@ -67,4 +62,28 @@
   s = status -sb
   ss = commit --message snapshot --no-gpg-sign
   su = submodule update
+  um = ! git fetch origin main:main && git checkout main
   wd = diff --patience --word-diff
+  # remove double git
+  git = !git
+[merge]
+  ff = only
+[pull]
+  rebase = true
+[status]
+  submoduleSummary = false
+[tag]
+  forceSignAnnotated = true
+[init]
+  defaultBranch = main
+[filter "lfs"]
+  clean = git-lfs clean -- %f
+  smudge = git-lfs smudge -- %f
+  process = git-lfs filter-process
+  required = true
+[url "ssh://git@github.com/"]
+  pushInsteadOf = https://github.com/
+[push]
+  autoSetupRemote = true
+[pull]
+  ff = only
