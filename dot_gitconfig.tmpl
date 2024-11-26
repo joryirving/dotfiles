@@ -13,14 +13,32 @@
   status = auto
   branch = auto
   interactive = auto
-[merge]
-  summary = true
-[push]
- default = current
-[help]
-	autocorrect = 1
 [commit]
   gpgsign = false
+[filter "lfs"]
+  clean = git-lfs clean -- %f
+  smudge = git-lfs smudge -- %f
+  process = git-lfs filter-process
+  required = true
+[help]
+	autocorrect = 1
+[init]
+  defaultBranch = main
+[merge]
+  summary = true
+  ff = only
+[push]
+  default = current
+  autoSetupRemote = true
+[pull]
+  rebase = true
+  ff = only
+[status]
+  submoduleSummary = false
+[tag]
+  forceSignAnnotated = true
+[url "ssh://git@github.com/"]
+  pushInsteadOf = https://github.com/
 [alias]
   yolo = !git commit -m \"$(curl -s whatthecommit.com/index.txt)\"
   a = add
@@ -66,24 +84,3 @@
   wd = diff --patience --word-diff
   # remove double git
   git = !git
-[merge]
-  ff = only
-[pull]
-  rebase = true
-[status]
-  submoduleSummary = false
-[tag]
-  forceSignAnnotated = true
-[init]
-  defaultBranch = main
-[filter "lfs"]
-  clean = git-lfs clean -- %f
-  smudge = git-lfs smudge -- %f
-  process = git-lfs filter-process
-  required = true
-[url "ssh://git@github.com/"]
-  pushInsteadOf = https://github.com/
-[push]
-  autoSetupRemote = true
-[pull]
-  ff = only

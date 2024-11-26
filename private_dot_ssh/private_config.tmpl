@@ -1,9 +1,5 @@
 LogLevel ERROR
 
-Host ubuntu-server
-  HostName ubuntu-server
-  User vetrius
-
 Host *
   AddKeysToAgent yes
   IdentityFile ~/.ssh/id_ed25519
@@ -16,3 +12,8 @@ Host *
 Host 192.168.*.*
   StrictHostKeyChecking no
   UserKnownHostsFile /dev/null
+Host 10.*.*.*
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+
+Include ~/.orbstack/ssh/config

@@ -1,3 +1,8 @@
 function tf --wraps=terraform --description 'terraform shorthand'
-   {{ lookPath "terraform" }} $argv
+    if type -q tofu
+        {{  lookPath "tofu" }} $argv
+    else
+        {{ lookPath "terraform" }} $argv
+    end
 end
+
