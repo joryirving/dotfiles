@@ -8,7 +8,7 @@ font-family = MonaspiceKr Nerd Font Mono
 font-family-bold = MonaspiceKr Nerd Font Bold
 font-family-italic = MonaspiceKr Nerd Font Italic
 font-family-bold-italic = MonaspiceKr Nerd Font Bold Italic
-font-size = 12
+font-size = 14
 font-thicken = true
 
 ## MacOS settings
