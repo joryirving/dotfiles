@@ -1,0 +1,35 @@
+## App
+auto-update = download
+auto-update-channel = stable
+clipboard-trim-trailing-spaces = true
+
+## Font
+font-family = MonaspiceKr Nerd Font Mono
+font-family-bold = MonaspiceKr Nerd Font Bold
+font-family-italic = MonaspiceKr Nerd Font Italic
+font-family-bold-italic = MonaspiceKr Nerd Font Bold Italic
+font-size = 12
+font-thicken = true
+
+## MacOS settings
+macos-auto-secure-input = true
+macos-secure-input-indication = true
+quit-after-last-window-closed = true
+shell-integration = detect
+
+## Theme
+theme = Cobalt2
+
+## Window
+# fit more on the screen
+adjust-cell-height = -12%
+# better colors
+window-colorspace = display-p3
+window-height = 45
+window-width = 180
+window-padding-x = 10
+window-padding-y = 10
+# center window by balancing padding
+window-padding-balance = true
+# extend tmux panes to bottom
+window-padding-color = extend
