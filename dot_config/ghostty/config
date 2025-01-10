@@ -33,3 +33,4 @@ window-padding-y = 10
 window-padding-balance = true
 # extend tmux panes to bottom
 window-padding-color = extend
+window-save-state = always
