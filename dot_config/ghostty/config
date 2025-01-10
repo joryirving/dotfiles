@@ -25,8 +25,8 @@ theme = Cobalt2
 adjust-cell-height = -12%
 # better colors
 window-colorspace = display-p3
-window-height = 45
-window-width = 180
+window-height = 30
+window-width = 90
 window-padding-x = 10
 window-padding-y = 10
 # center window by balancing padding
