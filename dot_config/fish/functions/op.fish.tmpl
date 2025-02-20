@@ -1,0 +1,7 @@
+function op --wraps=onepass --description 'onepass shorthand'
+    if type -q op.exe
+        {{ lookPath "op.exe" }} $argv
+    else
+        {{ lookPath "op" }} $argv
+    end
+end
