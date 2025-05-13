@@ -9,5 +9,5 @@ fi
 {{ lookPath "mise" }} install
 
 # Set Fish as default
-sudo echo "{{ lookPath "fish" }}" >> /etc/shells
-chsh -s {{ lookPath "fish" }}
+# sudo echo "$(which fish)" >> /etc/shells
+# chsh -s $(which fish)
