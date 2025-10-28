@@ -1,0 +1,8 @@
+{
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: [
+    ':skipStatusChecks',
+    'github>joryirving/renovate-config',
+    ':semanticCommits',
+  ],
+}
