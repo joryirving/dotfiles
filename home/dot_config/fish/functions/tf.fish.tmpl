@@ -1,8 +1,11 @@
 function tf --wraps=terraform --description 'terraform shorthand'
+    {{- if (contains "termux" .chezmoi.homeDir) }}
+    proot -b $PREFIX/etc/resolv.conf:/etc/resolv.conf terraform $argv
+    {{- else }}
     if type -q tofu
         {{  lookPath "tofu" }} $argv
     else
         {{ lookPath "terraform" }} $argv
     end
+    {{- end }}
 end
-

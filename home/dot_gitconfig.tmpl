@@ -1,0 +1,47 @@
+[user]
+  name = Jory Irving
+  email = jory@jory.dev
+{{- if (eq .chezmoi.os "darwin") }}
+  signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICqvMKxuiIVq0y5yQQrHDXuIBxpch0hkYxGMOq7XyZEi
+{{- else if (eq .chezmoi.os "linux") }}
+  {{- if (.chezmoi.kernel.osrelease | lower | contains "microsoft") }}
+  signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAimDt26wJWaZLR0yUeDHCD4hvPBMa1tD3Uos/3kehZ0
+  {{- end }}
+{{- end }}
+[gpg]
+  format = ssh
+[gpg "ssh"]
+{{- if (eq .chezmoi.os "darwin") }}
+  program = /Applications/1Password.app/Contents/MacOS/op-ssh-sign
+{{- else if (eq .chezmoi.os "linux") }}
+  {{- if (.chezmoi.kernel.osrelease | lower | contains "microsoft") }}
+  program = "/mnt/c/Users/joryi/AppData/Local/1Password/app/8/op-ssh-sign-wsl"
+  {{- end }}
+{{- end }}
+[format]
+  signOff = false
+[core]
+  autocrlf = input
+  editor = nano
+  excludesfile = {{ .chezmoi.homeDir }}/.gitignore_global
+[commit]
+  gpgsign = true
+[merge]
+  ff = only
+[pull]
+  rebase = true
+[status]
+  submoduleSummary = false
+[tag]
+  forceSignAnnotated = true
+[init]
+  defaultBranch = main
+[filter "lfs"]
+  smudge = git-lfs smudge -- %f
+  process = git-lfs filter-process
+  required = true
+  clean = git-lfs clean -- %f
+[url "ssh://git@github.com/"]
+  pushInsteadOf = https://github.com/
+[push]
+  autoSetupRemote = true
