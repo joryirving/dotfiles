@@ -1,19 +1,18 @@
-{{- if (eq .chezmoi.os "darwin") }}
-set -gx HOMEBREW_NO_ANALYTICS 1
-set -gx HOMEBREW_BUNDLE_FILE $XDG_CONFIG_HOME/homebrew/brewfile
-set -gx HOMEBREW_CASK_OPTS --no-quarantine
-set -gx HOMEBREW_AUTO_UPDATE_SECS 86400
-set -gx MISE_FISH_AUTO_ACTIVATE 0
-set -gx TERM xterm
+{{- if (eq .chezmoi.os "linux") }}
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
-for bindir in /usr/local/bin /opt/homebrew/bin
+for bindir in /usr/local/bin /usr/bin /bin /usr/local/sbin /sbin /usr/sbin
     test -d $bindir && fish_add_path --global $bindir
 end
+{{- end }}
+
+set -gx MISE_FISH_AUTO_ACTIVATE 0
+set -gx HOMEBREW_NO_ANALYTICS 1
+set -gx HOMEBREW_BUNDLE_FILE $XDG_CONFIG_HOME/homebrew/brewfile
+set -gx HOMEBREW_AUTO_UPDATE_SECS 86400
+set -gx HOMEBREW_CASK_OPTS --no-quarantine
 
 type -q brew && eval (brew shellenv)
-
-fish_add_path --global /opt/homebrew/opt/curl/bin
-fish_add_path --global /opt/homebrew/opt/gettext/bin
 
 if type -q gdu
     fish_add_path --global $HOMEBREW_PREFIX/opt/coreutils/libexec/gnubin
@@ -31,6 +30,16 @@ if type -q gawk
     fish_add_path --global $HOMEBREW_PREFIX/opt/gawk/libexec/gnubin
 end
 
+{{- if (eq .chezmoi.os "darwin") }}
+set -gx TERM xterm
+
+for bindir in /usr/local/bin /opt/homebrew/bin
+    test -d $bindir && fish_add_path --global $bindir
+end
+
+fish_add_path --global /opt/homebrew/opt/curl/bin
+fish_add_path --global /opt/homebrew/opt/gettext/bin
+
 if type -q gfind
     fish_add_path --global /opt/homebrew/opt/findutils/libexec/gnubin
 end
@@ -39,3 +48,4 @@ if type -q gtar
     fish_add_path --global /opt/homebrew/opt/gnu-tar/libexec/gnubin
 end
 {{- end }}
+
