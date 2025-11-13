@@ -8,13 +8,16 @@
   signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAimDt26wJWaZLR0yUeDHCD4hvPBMa1tD3Uos/3kehZ0
   {{- end }}
 {{- end }}
+{{- if or (eq .chezmoi.os "darwin") (and (eq .chezmoi.os "linux") (.chezmoi.kernel.osrelease | lower | contains "microsoft")) }}
 [gpg]
   format = ssh
-[gpg "ssh"]
+{{- end }}
 {{- if (eq .chezmoi.os "darwin") }}
+[gpg "ssh"]
   program = /Applications/1Password.app/Contents/MacOS/op-ssh-sign
 {{- else if (eq .chezmoi.os "linux") }}
   {{- if (.chezmoi.kernel.osrelease | lower | contains "microsoft") }}
+[gpg "ssh"]
   program = "/mnt/c/Users/joryi/AppData/Local/Microsoft/WindowsApps/op-ssh-sign-wsl.exe"
   {{- end }}
 {{- end }}
@@ -25,7 +28,11 @@
   editor = nano
   excludesfile = {{ .chezmoi.homeDir }}/.gitignore_global
 [commit]
+{{- if or (eq .chezmoi.os "darwin") (and (eq .chezmoi.os "linux") (.chezmoi.kernel.osrelease | lower | contains "microsoft")) }}
   gpgsign = true
+{{- else }}
+  gpgsign = false
+{{- end }}
 [merge]
   ff = only
 [pull]
