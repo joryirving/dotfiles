@@ -5,3 +5,18 @@ function op --wraps=onepass --description 'onepass shorthand'
         {{ lookPath "op" }} $argv
     end
 end
+
+function renovate
+    set -l token (op read "op://private/github.com/RENOVATE_CLI_TOKEN")
+
+    if test -z "$token"
+        echo "ERROR: Failed to read RENOVATE_CLI_TOKEN from 1Password"
+        return 1
+    end
+
+    curl -X POST \
+      -H "Authorization: Bearer $token" \
+      -H "Accept: application/vnd.github+json" \
+      https://api.github.com/repos/joryirving/admin/actions/workflows/schedule-renovate.yaml/dispatches \
+      -d '{"ref": "main"}'
+end
