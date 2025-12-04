@@ -17,6 +17,5 @@ Host 10.*.*.*
   UserKnownHostsFile /dev/null
 
 {{- if (eq .chezmoi.os "darwin") }}
-Include ~/.orbstack/ssh/config
 Include ~/.colima/ssh_config
 {{- end }}
