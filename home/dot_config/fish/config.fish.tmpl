@@ -1,3 +1,8 @@
+# Bootstrap fisher if not installed (fish plugin manager)
+if not command -v fisher >/dev/null 2>&1
+    curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | fish
+end
+
 function fish_greeting
     fastfetch
 end

@@ -1,2 +1,58 @@
+# =============================================================================
+# topgrade.toml — what topgrade updates and what it skips
+# =============================================================================
+# Run: topgrade
+# Docs: https://topgrade.dev/
+
+# ── Things to never touch ──────────────────────────────────────────────────
 [misc]
-disable = ["containers", "gem", "helm", "ruby_gems"]
+disable = [
+  # container runtimes / orchestrators
+  "containers",      # Docker/Podman/etc — usually managed separately
+  # language-specific package managers you don't use
+  "gem",             # Ruby gems — disabled
+  "helm",           # Helm charts — disabled
+  "ruby_gems",      # Ruby gems — disabled
+  # Linux-specific
+  "flatpak",        # Flatpak — not typically used
+  "snap",           # Snap packages — not typically used
+  # system-level / rarely needed
+  "powershell",     # PowerShell Gallery — unlikely on your machines
+  "emacs",          # Emacs packages — not your editor
+  "lvim",           # LunarVim — not installed
+  "winget",         # Windows only
+  # OS-level (homebrew handles macOS updates; linuxbrew handles Linux)
+  "system",
+  # stay away from things that might interfere with running processes
+  "linux_update",
+  # other
+  "restarts",       # don't restart services after update
+  "v Box",          # VirtualBox — usually managed manually
+]
+
+# ── Things you DO want updated ────────────────────────────────────────────
+[linuxbrew]
+enabled = true
+
+[homebrew]
+enabled = true
+# don't ask for sudo/password interactively
+args = ["--force"]
+
+[cargo]
+enabled = true
+
+[rustup]
+enabled = true
+
+[npm]
+enabled = true
+
+[vcprompt]
+enabled = false  # not installed
+
+[atuin]
+enabled = true
+
+[brew_cask]
+enabled = true
