@@ -3,7 +3,7 @@
 {{- if .personal }}
   email = jory@jory.dev
 {{- else }}
-  email = {{ promptString "Enter your email for git commits" | quote }}
+  email = {{ prompt "Enter your email for git commits" }}
 {{- end }}
 {{- if (eq .chezmoi.os "darwin") }}
   signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICqvMKxuiIVq0y5yQQrHDXuIBxpch0hkYxGMOq7XyZEi
