@@ -12,7 +12,7 @@ set -gx HOMEBREW_BUNDLE_FILE $XDG_CONFIG_HOME/homebrew/brewfile
 set -gx HOMEBREW_NO_AUTO_UPDATE 1
 set -gx HOMEBREW_CASK_OPTS --no-quarantine
 
-type -q brew && eval (brew shellenv)
+type -q brew && timeout 5 brew shellenv | eval
 
 if type -q gdu
     fish_add_path --global $HOMEBREW_PREFIX/opt/coreutils/libexec/gnubin
