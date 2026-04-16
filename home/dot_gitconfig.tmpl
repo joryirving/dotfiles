@@ -2,8 +2,10 @@
   name = Jory Irving
 {{- if .personal }}
   email = jory@jory.dev
+  signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAimDt26wJWaZLR0yUeDHCD4hvPBMa1tD3Uos/3kehZ0
 {{- else }}
   email = {{ .workEmail }}
+  signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICqvMKxuiIVq0y5yQQrHDXuIBxpch0hkYxGMOq7XyZEi
 {{- end }}
 {{- if or (eq .chezmoi.os "darwin") (and (eq .chezmoi.os "linux") (.chezmoi.kernel.osrelease | lower | contains "microsoft")) }}
 [gpg]
@@ -11,11 +13,6 @@
 {{- end }}
 {{- if or (eq .chezmoi.os "darwin") (and (eq .chezmoi.os "linux") (.chezmoi.kernel.osrelease | lower | contains "microsoft")) }}
 [gpg "ssh"]
-{{- if .personal }}
-  signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAimDt26wJWaZLR0yUeDHCD4hvPBMa1tD3Uos/3kehZ0
-{{- else }}
-  signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICqvMKxuiIVq0y5yQQrHDXuIBxpch0hkYxGMOq7XyZEi
-{{- end }}
 {{- if (eq .chezmoi.os "darwin") }}
   program = /Applications/1Password.app/Contents/MacOS/op-ssh-sign
 {{- else if (.chezmoi.kernel.osrelease | lower | contains "microsoft") }}
@@ -35,9 +32,11 @@
   gpgsign = false
 {{- end }}
 [merge]
-  ff = only
+  ff = false
 [pull]
   rebase = true
+[rebase]
+  autostash = true
 [status]
   submoduleSummary = false
 [tag]
