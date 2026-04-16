@@ -2,13 +2,7 @@
 
 {{- $personal = promptBool "personal" -}}
 
-{{- $workEmail := "" -}}
-{{- if not $personal }}
-{{-   $workEmail = promptString "Enter your work email for git commits" -}}
-{{- end }}
-
 format: yaml
 data:
   name: "Jory Irving"
   personal: {{ $personal | quote }}
-  workEmail: {{ $workEmail | quote }}
