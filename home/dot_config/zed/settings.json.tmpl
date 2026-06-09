@@ -1,0 +1,191 @@
+// Zed settings — managed by chezmoi.
+// Shared settings are below; machine-specific blocks are split by the `personal`
+// prompt. Work (non-personal) blocks come from the private `work` submodule.
+{
+  "telemetry": {
+    "diagnostics": false,
+    "metrics": false,
+  },
+  "base_keymap": "VSCode",
+  "ui_font_size": 16,
+  "buffer_font_size": 15,
+  "autosave": "on_focus_change",
+  "session": {
+    "trust_all_worktrees": true,
+  },
+  "outline_panel": {
+    "dock": "left",
+  },
+  "collaboration_panel": {
+    "dock": "left",
+  },
+  "git_panel": {
+    "dock": "left",
+  },
+  "project_panel": {
+    "dock": "left",
+  },
+{{- if .personal }}
+  // ---- personal ----
+  "edit_predictions": {
+    "provider": "open_ai_compatible_api",
+    "open_ai_compatible_api": {
+      "model": "mellum2-12b-a2.5b-thinking",
+      "api_url": "http://macbookpro.internal:1234/v1",
+    },
+  },
+  "context_servers": {
+    "mcp-server-context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"],
+      "env": {
+        "CONTEXT7_API_KEY": "{{ onepasswordRead "op://Kubernetes/context7/ZED_API_KEY" }}",
+      },
+    },
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"],
+    },
+    "github": {
+      "command": "/opt/homebrew/lib/node_modules/@modelcontextprotocol/server-github/dist/index.js",
+      "args": [],
+      "env": {
+        "GITHUB_TOKEN": "{{ onepasswordRead "op://Kubernetes/github-miso/GITHUB_TOKEN" }}",
+      },
+    },
+    "toolhive": {
+      "url": "https://mcp.jory.dev/mcp",
+    },
+    "kubectl": {
+      "command": "/opt/homebrew/lib/node_modules/@strowk/mcp-k8s-darwin-arm64/bin/mcp-k8s-go",
+      "args": [],
+    },
+    "dispatch": {
+      "command": "npx",
+      "args": ["tsx", "{{ .chezmoi.homeDir }}/git/dispatch/src/mcp/server.ts"],
+      "env": {
+        "DISPATCH_URL": "https://dispatch.jory.dev",
+        "DISPATCH_AGENT_TOKEN": "{{ onepasswordRead "op://Kubernetes/dispatch/DISPATCH_AGENT_TOKEN" }}",
+      },
+    },
+  },
+  "language_models": {
+    "lmstudio": {
+      "api_url": "http://macbookpro.internal:1234/v1",
+    },
+    "openai_compatible": {
+      "LiteLLM": {
+        "api_url": "https://litellm.jory.dev/v1",
+        "available_models": [
+          {
+            "name": "self-hosted",
+            "max_tokens": 262144,
+            "max_output_tokens": 16384,
+            "capabilities": { "tools": true, "images": true, "parallel_tool_calls": true, "prompt_cache_key": false, "chat_completions": true, "interleaved_reasoning": false }
+          },
+          {
+            "name": "nvidia",
+            "max_tokens": 131072,
+            "max_output_tokens": 16384,
+            "capabilities": { "tools": true, "images": true, "parallel_tool_calls": true, "prompt_cache_key": false, "chat_completions": true, "interleaved_reasoning": false }
+          },
+          {
+            "name": "review",
+            "max_tokens": 262144,
+            "max_output_tokens": 16384,
+            "capabilities": { "tools": true, "images": true, "parallel_tool_calls": false, "prompt_cache_key": false, "chat_completions": true, "interleaved_reasoning": false }
+          },
+          {
+            "name": "kimi-k2.6",
+            "max_tokens": 262144,
+            "max_output_tokens": 262144,
+            "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
+          },
+          {
+            "name": "opencode-go-glm-5.1",
+            "max_tokens": 203000,
+            "max_output_tokens": 16384,
+            "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
+          },
+          {
+            "name": "opencode-go-deepseek-v4-flash",
+            "max_tokens": 1000000,
+            "max_output_tokens": 16384,
+            "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
+          },
+          {
+            "name": "opencode-go-deepseek-v4-pro",
+            "max_tokens": 1000000,
+            "max_output_tokens": 16384,
+            "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
+          },
+          {
+            "name": "cheap-coder",
+            "max_tokens": 1000000,
+            "max_output_tokens": 16384,
+            "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
+          },
+          {
+            "name": "reasoning-coder",
+            "max_tokens": 203000,
+            "max_output_tokens": 16384,
+            "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
+          }
+        ]
+      }
+    },
+    "anthropic": {
+      "api_url": "https://litellm.jory.dev",
+      "available_models": [
+        {
+          "name": "MiniMax",
+          "display_name": "MiniMax",
+          "max_tokens": 1000000,
+          "max_output_tokens": 131072
+        }
+      ]
+    },
+  },
+  "agent": {
+    "default_model": {
+      "provider": "LiteLLM",
+      "model": "nvidia",
+      "enable_thinking": false,
+    },
+    "sidebar_side": "right",
+    "dock": "right",
+    "favorite_models": [
+      { "provider": "LiteLLM", "model": "self-hosted", "enable_thinking": false },
+      { "provider": "anthropic", "model": "MiniMax", "enable_thinking": false },
+      { "provider": "LiteLLM", "model": "cheap-coder", "enable_thinking": false },
+      { "provider": "LiteLLM", "model": "opencode-go-deepseek-v4-pro", "enable_thinking": false },
+      { "provider": "LiteLLM", "model": "reasoning-coder", "enable_thinking": false },
+    ],
+    "model_parameters": [],
+  },
+  "file_types": {
+    "json5": ["*.json5"],
+  },
+  "line_ending": "prefer_lf",
+  "agent_servers": {
+    "codex-acp": {
+      "default_config_options": {
+        "reasoning_effort": "medium",
+        "model": "gpt-5.4",
+        "mode": "full-access",
+      },
+      "type": "registry",
+      "env": {
+        "CODEX_HOME": "{{ .chezmoi.homeDir }}/.codex",
+      },
+    },
+  },
+  "theme": {
+    "mode": "system",
+    "light": "One Light",
+    "dark": "One Dark",
+  },
+{{- else }}
+{{ includeTemplate "work/zed.json" . }}
+{{- end }}
+}

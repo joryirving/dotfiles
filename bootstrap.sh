@@ -13,7 +13,6 @@
 set -euo pipefail
 
 DOTFILES_REPO="${DOTFILES_REPO:-https://github.com/joryirving/dotfiles.git}"
-DOTFILES_DIR="${DOTFILES_DIR:-$HOME/.local/share/dotfiles}"
 CHEZMOI_BIN="$HOME/.local/bin/chezmoi"
 
 # -----------------------------------------------------------------------------
@@ -201,27 +200,18 @@ install_mise
 install_fisher
 
 # -----------------------------------------------------------------------------
-# Step 4: clone or update dotfiles repo
+# Step 4: initialize dotfiles with chezmoi
 # -----------------------------------------------------------------------------
-info "Setting up dotfiles..."
-if [[ -d "$DOTFILES_DIR/.git" ]]; then
-  info "  dotfiles already cloned at $DOTFILES_DIR — pulling latest..."
-  git -C "$DOTFILES_DIR" pull --ff-only
-else
-  info "  cloning dotfiles to $DOTFILES_DIR..."
-  mkdir -p "$(dirname "$DOTFILES_DIR")"
-  git clone --bare "$DOTFILES_REPO" "$DOTFILES_DIR"
-fi
-
-# Ensure chezmoi can find the repo
-exportchezmoi config:
-  git -C "$DOTFILES_DIR" config --local init.defaultBranch main
-
-# -----------------------------------------------------------------------------
-# Step 5: run chezmoi init
-# -----------------------------------------------------------------------------
-info "Running chezmoi init — you will be prompted for work/personal setup..."
-chezmoi init --apply --source="$DOTFILES_DIR"
+# `chezmoi init` clones the repo into its source dir (~/.local/share/chezmoi),
+# recurses submodules (the private `work` overlay), and applies. You will be
+# prompted for the work/personal setup on first run.
+#
+# NOTE: the private work submodule is fetched over SSH (git@github.com), so a
+# GitHub SSH key must be available — e.g. via the 1Password SSH agent — before
+# running this. On a brand-new machine, set that up first; otherwise re-run
+# `chezmoi init` once SSH is ready and the work overlay will be pulled in.
+info "Initializing dotfiles with chezmoi (prompts for work/personal setup)..."
+"$CHEZMOI_BIN" init --apply "$DOTFILES_REPO"
 
 info "Bootstrap complete!"
 info ""
