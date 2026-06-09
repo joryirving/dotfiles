@@ -1,0 +1,93 @@
+{
+  "$schema": "https://opencode.ai/config.json"
+{{- if .personal }}
+  , "plugin": ["superpowers@git+https://github.com/obra/superpowers.git#f2cbfbe"]
+  , "enabled_providers": ["lmstudio", "litellm-anthropic", "litellm"]
+  , "model": "litellm/self-hosted"
+  , "provider": {
+    "lmstudio": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "LM Studio",
+      "options": {
+        "baseURL": "http://macbookpro.internal:1234/v1"
+      },
+      "models": {
+        "qwen3.6-35b-a3b": { "name": "Qwen3.6 35B-A3B" },
+        "gemma-4-26b-a4b-it-qat": { "name": "Gemma 4 26B" }
+      }
+    },
+    "litellm-anthropic": {
+      "npm": "@ai-sdk/anthropic",
+      "name": "LiteLLM Anthropic",
+      "options": {
+        "baseURL": "https://litellm.jory.dev/v1",
+        "authToken": "{{ onepasswordRead "op://Kubernetes/litellm/LITELLM_MASTER_KEY" }}",
+        "timeout": 300000
+      },
+      "models": {
+        "MiniMax-M2.7": { "name": "MiniMax M2.7" },
+        "MiniMax": { "name": "MiniMax M3" }
+      }
+    },
+    "litellm": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "LiteLLM OpenAI",
+      "options": {
+        "baseURL": "https://litellm.jory.dev/v1",
+        "apiKey": "{{ onepasswordRead "op://Kubernetes/litellm/LITELLM_MASTER_KEY" }}",
+        "timeout": 1800000
+      },
+      "models": {
+        "self-hosted": { "name": "Qwen3.6-35B-A3B", "limit": { "context": 262144, "output": 16384 } },
+        "nvidia": { "name": "Qwen3.6-27B", "limit": { "context": 200000, "output": 16384 } },
+        "cheap-coder": { "name": "OpenCode Go DeepSeek V4 Flash", "limit": { "context": 1000000, "output": 16384 } },
+        "reasoning-coder": { "name": "OpenCode Go GLM 5.1", "limit": { "context": 203000, "output": 16384 } },
+        "kimi-k2.6": { "name": "Kimi K2.6", "limit": { "context": 262144, "output": 262144 } }
+      }
+    }
+  }
+  , "mcp": {
+    "mcp-server-context7": {
+      "type": "local",
+      "command": ["npx", "-y", "@upstash/context7-mcp"],
+      "enabled": true,
+      "environment": {
+        "CONTEXT7_API_KEY": "{{ onepasswordRead "op://Kubernetes/context7/OPENCODE_API_KEY" }}"
+      }
+    },
+    "memory": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-memory"],
+      "enabled": true
+    },
+    "github": {
+      "type": "local",
+      "command": ["/opt/homebrew/lib/node_modules/@modelcontextprotocol/server-github/dist/index.js"],
+      "enabled": true,
+      "environment": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "{{ onepasswordRead "op://Kubernetes/github-miso/GITHUB_TOKEN" }}"
+      }
+    },
+    "toolhive": {
+      "type": "remote",
+      "url": "https://mcp.jory.dev/mcp"
+    },
+    "kubectl": {
+      "type": "local",
+      "command": ["/opt/homebrew/lib/node_modules/@strowk/mcp-k8s-darwin-arm64/bin/mcp-k8s-go"],
+      "enabled": true
+    },
+    "dispatch": {
+      "type": "local",
+      "command": ["npx", "tsx", "{{ .chezmoi.homeDir }}/git/dispatch/src/mcp/server.ts"],
+      "enabled": true,
+      "environment": {
+        "DISPATCH_URL": "https://dispatch.jory.dev",
+        "DISPATCH_AGENT_TOKEN": "{{ onepasswordRead "op://Kubernetes/dispatch/DISPATCH_AGENT_TOKEN" }}"
+      }
+    }
+  }
+{{- else }}
+{{ includeTemplate "work/opencode.json" . }}
+{{- end }}
+}

@@ -1,0 +1,3 @@
+[submodule "home/.chezmoitemplates/work"]
+	path = home/.chezmoitemplates/work
+	url = git@github.com:joryirving/dotfiles-work.git
