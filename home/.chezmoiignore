@@ -1,0 +1,6 @@
+{{/* Skip the Zed config on machines without Zed (e.g. the Raspberry Pi jump server).
+     Zed's CLI is often not on PATH even when installed, so check the macOS app
+     bundle and a common linux install path in addition to lookPath. */}}
+{{- if not (or (stat "/Applications/Zed.app") (stat (joinPath .chezmoi.homeDir ".local/bin/zed")) (lookPath "zed")) }}
+.config/zed/settings.json
+{{- end }}
