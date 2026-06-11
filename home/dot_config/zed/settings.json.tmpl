@@ -86,7 +86,7 @@
         "available_models": [
           {
             "name": "self-hosted",
-            "max_tokens": 262144,
+            "max_tokens": 200000,
             "max_output_tokens": 16384,
             "capabilities": { "tools": true, "images": true, "parallel_tool_calls": true, "prompt_cache_key": false, "chat_completions": true, "interleaved_reasoning": false }
           },
@@ -109,32 +109,50 @@
             "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
           },
           {
-            "name": "opencode-go-glm-5.1",
+            "name": "glm-5.1",
             "max_tokens": 203000,
             "max_output_tokens": 16384,
             "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
           },
           {
-            "name": "opencode-go-deepseek-v4-flash",
+            "name": "dsv4f",
             "max_tokens": 1000000,
             "max_output_tokens": 16384,
             "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
           },
           {
-            "name": "opencode-go-deepseek-v4-pro",
+            "name": "dsv4p",
             "max_tokens": 1000000,
             "max_output_tokens": 16384,
             "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
           },
           {
-            "name": "cheap-coder",
-            "max_tokens": 1000000,
+            "name": "go-kimi-k2.6",
+            "max_tokens": 262144,
             "max_output_tokens": 16384,
             "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
           },
           {
-            "name": "reasoning-coder",
-            "max_tokens": 203000,
+            "name": "go-minimax-m3",
+            "max_tokens": 1000000,
+            "max_output_tokens": 32768,
+            "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
+          },
+          {
+            "name": "go-minimax-m2.7",
+            "max_tokens": 204800,
+            "max_output_tokens": 16384,
+            "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
+          },
+          {
+            "name": "mimo-v2.5-pro",
+            "max_tokens": 262144,
+            "max_output_tokens": 16384,
+            "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
+          },
+          {
+            "name": "qwen3.7-plus",
+            "max_tokens": 1000000,
             "max_output_tokens": 16384,
             "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
           },
@@ -182,9 +200,9 @@
     "favorite_models": [
       { "provider": "LiteLLM", "model": "self-hosted", "enable_thinking": false },
       { "provider": "anthropic", "model": "MiniMax", "enable_thinking": false },
-      { "provider": "LiteLLM", "model": "cheap-coder", "enable_thinking": false },
-      { "provider": "LiteLLM", "model": "opencode-go-deepseek-v4-pro", "enable_thinking": false },
-      { "provider": "LiteLLM", "model": "reasoning-coder", "enable_thinking": false },
+      { "provider": "LiteLLM", "model": "dsv4f", "enable_thinking": false },
+      { "provider": "LiteLLM", "model": "dsv4p", "enable_thinking": false },
+      { "provider": "LiteLLM", "model": "glm-5.1", "enable_thinking": false },
     ],
     "model_parameters": [],
   },
