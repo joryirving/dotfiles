@@ -80,6 +80,14 @@
       "command": ["/opt/homebrew/lib/node_modules/@strowk/mcp-k8s-darwin-arm64/bin/mcp-k8s-go"],
       "enabled": true
     },
+    "flux": {
+      "type": "local",
+      "command": ["/opt/homebrew/bin/flux-operator-mcp", "serve"],
+      "enabled": true,
+      "environment": {
+        "KUBECONFIG": "{{ .chezmoi.homeDir }}/.kube/config"
+      }
+    },
     "dispatch": {
       "type": "local",
       "command": ["npx", "tsx", "{{ .chezmoi.homeDir }}/git/dispatch/src/mcp/server.ts"],

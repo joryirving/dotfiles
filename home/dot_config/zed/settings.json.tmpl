@@ -60,6 +60,13 @@
       "command": "/opt/homebrew/lib/node_modules/@strowk/mcp-k8s-darwin-arm64/bin/mcp-k8s-go",
       "args": [],
     },
+    "flux": {
+      "command": "/opt/homebrew/bin/flux-operator-mcp",
+      "args": ["serve"],
+      "env": {
+        "KUBECONFIG": "{{ .chezmoi.homeDir }}/.kube/config",
+      },
+    },
     "dispatch": {
       "command": "npx",
       "args": ["tsx", "{{ .chezmoi.homeDir }}/git/dispatch/src/mcp/server.ts"],
