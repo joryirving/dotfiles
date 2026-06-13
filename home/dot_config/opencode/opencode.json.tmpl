@@ -109,6 +109,32 @@
       }
     }
   }
+  , "agent": {
+    "lean": {
+      "description": "Minimal MCP context — toolhive router only (reaches other MCPs via call_tool)",
+      "mode": "primary",
+      "tools": {
+        "mcp-server-context7*": false,
+        "memory*": false,
+        "github*": false,
+        "kubectl*": false,
+        "flux*": false,
+        "konflate*": false,
+        "dispatch*": false
+      }
+    },
+    "gitops": {
+      "description": "Cluster ops — kubectl, flux, konflate only",
+      "mode": "primary",
+      "tools": {
+        "mcp-server-context7*": false,
+        "memory*": false,
+        "github*": false,
+        "toolhive*": false,
+        "dispatch*": false
+      }
+    }
+  }
 {{- else }}
 {{ includeTemplate "work/opencode.json" . }}
 {{- end }}
