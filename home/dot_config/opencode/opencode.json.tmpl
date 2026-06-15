@@ -1,7 +1,10 @@
 {
   "$schema": "https://opencode.ai/config.json"
 {{- if .personal }}
-  , "plugin": ["superpowers@git+https://github.com/obra/superpowers.git#f2cbfbe"]
+  , "plugin": [
+    "superpowers@git+https://github.com/obra/superpowers.git#f2cbfbe",
+    ["@eleboucher/opencode-memini@0.3.2", { "base_url": "https://memini.jory.dev", "namespace": "opencode" }]
+  ]
   , "enabled_providers": ["lmstudio", "litellm-anthropic", "litellm"]
   , "model": "litellm/self-hosted"
   , "provider": {
