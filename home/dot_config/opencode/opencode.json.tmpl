@@ -5,20 +5,23 @@
     "superpowers@git+https://github.com/obra/superpowers.git#f2cbfbe",
     ["@eleboucher/opencode-memini@0.3.9", { "base_url": "https://memini.jory.dev", "namespace": "opencode" }]
   ]
-  , "enabled_providers": ["lmstudio", "litellm-anthropic", "litellm"]
+  , "enabled_providers": [{{ if eq .chezmoi.os "darwin" }}"lmstudio", {{ end }}"litellm-anthropic", "litellm"]
   , "model": "litellm/self-hosted"
   , "provider": {
+    {{- if eq .chezmoi.os "darwin" }}
+    {{/* LM Studio runs locally on macOS only; absent off-Mac (Rpi5 jumpbox). */}}
     "lmstudio": {
       "npm": "@ai-sdk/openai-compatible",
       "name": "LM Studio",
       "options": {
-        "baseURL": "http://macbookpro.internal:1234/v1"
+        "baseURL": "http://localhost:1234/v1"
       },
       "models": {
         "qwen3.6-35b-a3b": { "name": "Qwen3.6 35B-A3B" },
         "gemma-4-26b-a4b-it-qat": { "name": "Gemma 4 26B" }
       }
     },
+    {{- end }}
     "litellm-anthropic": {
       "npm": "@ai-sdk/anthropic",
       "name": "LiteLLM Anthropic",

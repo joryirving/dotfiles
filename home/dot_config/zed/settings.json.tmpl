@@ -27,11 +27,12 @@
   },
 {{- if .personal }}
   // ---- personal ----
+  // LM Studio runs locally on the Mac (Zed is macOS-only — see .chezmoiignore).
   "edit_predictions": {
     "provider": "open_ai_compatible_api",
     "open_ai_compatible_api": {
       "model": "mellum2-12b-a2.5b-thinking",
-      "api_url": "http://macbookpro.internal:1234/v1",
+      "api_url": "http://localhost:1234/v1",
     },
   },
   "context_servers": {
@@ -42,8 +43,7 @@
         "CONTEXT7_API_KEY": "{{ onepasswordRead "op://Kubernetes/context7/ZED_API_KEY" }}",
       },
     },
-    // macOS-only local server (Homebrew binary); off-Mac it's reached via toolhive.
-    {{- if eq .chezmoi.os "darwin" }}
+    // Local server via Homebrew binary (Zed is macOS-only — see .chezmoiignore).
     "github": {
       "command": "/opt/homebrew/lib/node_modules/@modelcontextprotocol/server-github/dist/index.js",
       "args": [],
@@ -51,7 +51,6 @@
         "GITHUB_TOKEN": "{{ onepasswordRead "op://Kubernetes/github-miso/GITHUB_TOKEN" }}",
       },
     },
-    {{- end }}
     "memini": {
       "url": "https://memini.jory.dev/mcp",
       "headers": { "X-Memini-Namespace": "zed", "Authorization": "Bearer {{ onepasswordRead "op://Kubernetes/memini/MEMINI_API_KEY" }}" },
@@ -62,8 +61,7 @@
     "konflate": {
       "url": "https://konflate.jory.dev/mcp",
     },
-    // macOS-only local servers (Homebrew binaries); off-Mac reached via toolhive.
-    {{- if eq .chezmoi.os "darwin" }}
+    // Local servers via Homebrew binaries (Zed is macOS-only — see .chezmoiignore).
     "kubectl": {
       "command": "/opt/homebrew/lib/node_modules/@strowk/mcp-k8s-darwin-arm64/bin/mcp-k8s-go",
       "args": [],
@@ -75,7 +73,6 @@
         "KUBECONFIG": "{{ .chezmoi.homeDir }}/.kube/config",
       },
     },
-    {{- end }}
     "dispatch": {
       "command": "npx",
       "args": ["tsx", "{{ .chezmoi.homeDir }}/git/dispatch/src/mcp/server.ts"],
@@ -86,8 +83,9 @@
     },
   },
   "language_models": {
+    // Zed auto-discovers whatever models LM Studio currently has loaded.
     "lmstudio": {
-      "api_url": "http://macbookpro.internal:1234/v1",
+      "api_url": "http://localhost:1234/v1",
     },
     "openai_compatible": {
       "LiteLLM": {
