@@ -54,7 +54,7 @@
     {{- end }}
     "memini": {
       "url": "https://memini.jory.dev/mcp",
-      "headers": { "X-Memini-Namespace": "zed" },
+      "headers": { "X-Memini-Namespace": "zed", "Authorization": "Bearer {{ onepasswordRead "op://Kubernetes/memini/MEMINI_API_KEY" }}" },
     },
     "toolhive": {
       "url": "https://mcp.jory.dev/mcp",

@@ -7,6 +7,10 @@ set -gx ANSIBLE_HOST_KEY_CHECKING False
 set -gx PY_COLORS true
 set -gx GPG_TTY (tty)
 set -gx LANG en_US.utf-8
+{{- if .personal }}
+# memini bearer token — opencode's memini plugin reads it from env only
+set -gx MEMINI_API_KEY "{{ onepasswordRead "op://Kubernetes/memini/MEMINI_API_KEY" }}"
+{{- end }}
 
 fish_add_path --global "{{ .chezmoi.homeDir }}/.local/bin"
 fish_add_path --global "{{ .chezmoi.homeDir }}/.cargo/bin"
