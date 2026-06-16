@@ -10,8 +10,6 @@
 {{- if or (eq .chezmoi.os "darwin") (and (eq .chezmoi.os "linux") (.chezmoi.kernel.osrelease | lower | contains "microsoft")) }}
 [gpg]
   format = ssh
-{{- end }}
-{{- if or (eq .chezmoi.os "darwin") (and (eq .chezmoi.os "linux") (.chezmoi.kernel.osrelease | lower | contains "microsoft")) }}
 [gpg "ssh"]
 {{- if (eq .chezmoi.os "darwin") }}
   program = /Applications/1Password.app/Contents/MacOS/op-ssh-sign
