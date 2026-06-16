@@ -3,7 +3,7 @@
 {{- if .personal }}
   , "plugin": [
     "superpowers@git+https://github.com/obra/superpowers.git#f2cbfbe",
-    ["@eleboucher/opencode-memini@0.3.9", { "base_url": "https://memini.jory.dev", "namespace": "opencode" }]
+    ["@eleboucher/opencode-memini@0.4.2", { "base_url": "https://memini.jory.dev", "namespace": "opencode" }]
   ]
   , "enabled_providers": [{{ if eq .chezmoi.os "darwin" }}"lmstudio", {{ end }}"litellm-anthropic", "litellm"]
   , "model": "litellm/self-hosted"
