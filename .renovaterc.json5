@@ -5,6 +5,11 @@
     'github>joryirving/renovate-config',
     ':semanticCommits',
   ],
+  // Track the private `work` overlay submodule — advances the pinned commit to
+  // the tip of its default branch (main). Disabled by default in Renovate.
+  'git-submodules': {
+    enabled: true,
+  },
   customManagers: [
     {
       customType: 'regex',
@@ -14,6 +19,27 @@
       matchStrings: ['(?<depName>@[\\w.-]+/[\\w.-]+)@(?<currentValue>\\d[\\w.-]*)'],
       datasourceTemplate: 'npm',
       versioningTemplate: 'npm',
+    },
+    {
+      customType: 'regex',
+      description: 'superpowers opencode plugin pinned to a git commit',
+      managerFilePatterns: ['/opencode\\.json\\.tmpl$/'],
+      // "superpowers@git+https://github.com/obra/superpowers.git#f2cbfbe"
+      matchStrings: ['superpowers@git\\+https://github\\.com/obra/superpowers\\.git#(?<currentDigest>[a-f0-9]+)'],
+      datasourceTemplate: 'git-refs',
+      depNameTemplate: 'obra/superpowers',
+      packageNameTemplate: 'https://github.com/obra/superpowers',
+      currentValueTemplate: 'main',
+    },
+  ],
+  packageRules: [
+    {
+      // superpowers runs inside the agent with full tool access — never
+      // auto-merge. Open a PR so the new commit can be re-scanned for prompt
+      // injection / exfiltration before the pin moves.
+      matchPackageNames: ['obra/superpowers'],
+      automerge: false,
+      addLabels: ['security-review'],
     },
   ],
 }

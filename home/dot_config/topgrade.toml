@@ -27,7 +27,6 @@ disable = [
   "linux_update",
   # other
   "restarts",       # don't restart services after update
-  "v Box",          # VirtualBox — usually managed manually
 ]
 
 # ── Things you DO want updated ────────────────────────────────────────────

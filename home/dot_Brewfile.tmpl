@@ -1,0 +1,95 @@
+# =============================================================================
+# ~/.Brewfile — declarative Homebrew manifest (managed by chezmoi).
+# Applied via `brew bundle --global` from the run_onchange_ script on apply.
+#
+# Layout follows chezmoi's two axes:
+#   core            → all machines
+#   .personal       → personal mac + rpi5 (not the work mac)
+#   os == darwin    → both macs, then split work vs personal
+#   else (linux)    → rpi5 (always personal — no work linux)
+#
+# Tool overlap is deliberately avoided: kustomize/kubeconform/stern/minijinja
+# and language toolchains (go/rust/python) are managed by mise, not brew.
+# =============================================================================
+
+# ── core (all machines) ──────────────────────────────────────────────────
+brew "atuin"
+brew "chezmoi"
+brew "fastfetch"
+brew "fish"
+brew "gh"
+brew "helm"
+brew "k9s"
+brew "krew"
+brew "kubecolor"
+brew "starship"
+brew "viddy"
+brew "yq"
+brew "zoxide"
+{{- if .personal }}
+
+# ── personal machines (personal mac + rpi5) ──────────────────────────────
+brew "jq"
+{{- end }}
+
+{{- if eq .chezmoi.os "darwin" }}
+
+# ── macOS (both macs) ────────────────────────────────────────────────────
+brew "coreutils"
+brew "colima"
+brew "docker"
+brew "docker-compose"
+brew "htop"
+brew "iperf3"
+brew "kubectx"
+brew "opentofu"
+brew "prettier"
+brew "tree"
+brew "yamllint"
+cask "ghostty"
+cask "1password-cli"
+{{- if .personal }}
+
+# ── personal mac ─────────────────────────────────────────────────────────
+brew "age"
+brew "sops"
+brew "direnv"
+brew "kind"
+brew "helmfile"
+brew "tflint"
+brew "pre-commit"
+brew "ripgrep"
+brew "lsd"
+brew "tmux"
+brew "uv"
+brew "wget"
+brew "watch"
+brew "git"
+brew "moreutils"
+brew "openclaw/tap/openclaw-cli"
+cask "1password"
+{{- else }}
+
+# ── work mac ─────────────────────────────────────────────────────────────
+brew "bash"
+brew "awscli"
+brew "gomplate"
+brew "git-lfs"
+brew "hey"
+brew "ko"
+brew "common-fate/granted/granted"
+brew "hashicorp/tap/terraform"
+brew "controlplaneio-fluxcd/tap/flux-operator-mcp"
+brew "keidarcy/tap/e1s"
+cask "dbeaver-community"
+cask "rectangle"
+cask "session-manager-plugin"
+{{- end }}
+{{- else }}
+
+# ── rpi5 (linux, personal) ───────────────────────────────────────────────
+brew "bat"
+brew "gcc"
+brew "handfish/tap/talos-pilot"
+brew "nano-collective/nanocoder/nanocoder"
+{{- end }}

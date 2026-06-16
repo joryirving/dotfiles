@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# =============================================================================
+# Sync Homebrew packages from ~/.Brewfile. Runs on `chezmoi apply` whenever the
+# Brewfile changes (its hash is embedded below, so this reruns on every edit).
+# =============================================================================
+set -uo pipefail
+
+# Brewfile hash: {{ include "dot_Brewfile.tmpl" | sha256sum }}
+
+if ! command -v brew >/dev/null 2>&1; then
+  echo "[INFO] brew not found; skipping brew bundle" >&2
+  exit 0
+fi
+
+echo "[INFO] brew bundle --global (install missing packages)..." >&2
+# --no-upgrade: leave upgrades to topgrade. --no-lock: don't write ~/.Brewfile.lock.json.
+if ! brew bundle install --global --no-upgrade --no-lock; then
+  echo "[WARN] brew bundle reported failures; continuing apply" >&2
+fi

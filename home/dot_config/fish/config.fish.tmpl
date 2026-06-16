@@ -1,3 +1,7 @@
 function fish_greeting
-    fastfetch
+    # fastfetch comes from the Brewfile; guard so shells opened before
+    # `brew bundle` has run on a fresh machine don't error.
+    if type -q fastfetch
+        fastfetch
+    end
 end
