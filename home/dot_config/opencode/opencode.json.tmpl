@@ -68,11 +68,6 @@
         "CONTEXT7_API_KEY": "{{ onepasswordRead "op://Kubernetes/context7/OPENCODE_API_KEY" }}"
       }
     },
-    "memory": {
-      "type": "local",
-      "command": ["npx", "-y", "@modelcontextprotocol/server-memory"],
-      "enabled": true
-    },
     "toolhive": {
       "type": "remote",
       "url": "https://mcp.jory.dev/mcp"
@@ -122,7 +117,6 @@
       "mode": "primary",
       "tools": {
         "mcp-server-context7*": false,
-        "memory*": false,
         "github*": false,
         "kubectl*": false,
         "flux*": false,
@@ -135,7 +129,6 @@
       "mode": "primary",
       "tools": {
         "mcp-server-context7*": false,
-        "memory*": false,
         "github*": false,
         "dispatch*": false
         {{- if eq .chezmoi.os "darwin" }}

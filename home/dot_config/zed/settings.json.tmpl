@@ -42,10 +42,6 @@
         "CONTEXT7_API_KEY": "{{ onepasswordRead "op://Kubernetes/context7/ZED_API_KEY" }}",
       },
     },
-    "memory": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-memory"],
-    },
     // macOS-only local server (Homebrew binary); off-Mac it's reached via toolhive.
     {{- if eq .chezmoi.os "darwin" }}
     "github": {
