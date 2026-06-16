@@ -73,14 +73,6 @@
       "command": ["npx", "-y", "@modelcontextprotocol/server-memory"],
       "enabled": true
     },
-    "github": {
-      "type": "local",
-      "command": ["/opt/homebrew/lib/node_modules/@modelcontextprotocol/server-github/dist/index.js"],
-      "enabled": true,
-      "environment": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "{{ onepasswordRead "op://Kubernetes/github-miso/GITHUB_TOKEN" }}"
-      }
-    },
     "toolhive": {
       "type": "remote",
       "url": "https://mcp.jory.dev/mcp"
@@ -88,19 +80,6 @@
     "konflate": {
       "type": "remote",
       "url": "https://konflate.jory.dev/mcp"
-    },
-    "kubectl": {
-      "type": "local",
-      "command": ["/opt/homebrew/lib/node_modules/@strowk/mcp-k8s-darwin-arm64/bin/mcp-k8s-go"],
-      "enabled": true
-    },
-    "flux": {
-      "type": "local",
-      "command": ["/opt/homebrew/bin/flux-operator-mcp", "serve"],
-      "enabled": true,
-      "environment": {
-        "KUBECONFIG": "{{ .chezmoi.homeDir }}/.kube/config"
-      }
     },
     "dispatch": {
       "type": "local",
@@ -111,6 +90,31 @@
         "DISPATCH_AGENT_TOKEN": "{{ onepasswordRead "op://Kubernetes/dispatch/DISPATCH_AGENT_TOKEN" }}"
       }
     }
+    {{- if eq .chezmoi.os "darwin" }}
+    {{/* macOS-only local servers (Homebrew binaries). Off-Mac (e.g. Rpi5 jumpbox)
+         these tools are reached through the toolhive gateway, which aggregates them. */}}
+    , "github": {
+      "type": "local",
+      "command": ["/opt/homebrew/lib/node_modules/@modelcontextprotocol/server-github/dist/index.js"],
+      "enabled": true,
+      "environment": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "{{ onepasswordRead "op://Kubernetes/github-miso/GITHUB_TOKEN" }}"
+      }
+    }
+    , "kubectl": {
+      "type": "local",
+      "command": ["/opt/homebrew/lib/node_modules/@strowk/mcp-k8s-darwin-arm64/bin/mcp-k8s-go"],
+      "enabled": true
+    }
+    , "flux": {
+      "type": "local",
+      "command": ["/opt/homebrew/bin/flux-operator-mcp", "serve"],
+      "enabled": true,
+      "environment": {
+        "KUBECONFIG": "{{ .chezmoi.homeDir }}/.kube/config"
+      }
+    }
+    {{- end }}
   }
   , "agent": {
     "lean": {
@@ -127,14 +131,20 @@
       }
     },
     "gitops": {
-      "description": "Cluster ops — kubectl, flux, konflate only",
+      "description": "Cluster ops — kubectl/flux/konflate direct on macOS; via toolhive router off-Mac",
       "mode": "primary",
       "tools": {
         "mcp-server-context7*": false,
         "memory*": false,
         "github*": false,
-        "toolhive*": false,
         "dispatch*": false
+        {{- if eq .chezmoi.os "darwin" }}
+        {{/* kubectl/flux run as local binaries here, so reach them directly and
+             skip the toolhive router. */}}
+        , "toolhive*": false
+        {{- end }}
+        {{/* Off-Mac the local binaries are absent (see mcp block), so toolhive is
+             left enabled — its find_tool/call_tool router reaches kubectl/flux/etc. */}}
       }
     }
   }

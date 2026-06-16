@@ -46,6 +46,8 @@
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-memory"],
     },
+    // macOS-only local server (Homebrew binary); off-Mac it's reached via toolhive.
+    {{- if eq .chezmoi.os "darwin" }}
     "github": {
       "command": "/opt/homebrew/lib/node_modules/@modelcontextprotocol/server-github/dist/index.js",
       "args": [],
@@ -53,6 +55,7 @@
         "GITHUB_TOKEN": "{{ onepasswordRead "op://Kubernetes/github-miso/GITHUB_TOKEN" }}",
       },
     },
+    {{- end }}
     "memini": {
       "url": "https://memini.jory.dev/mcp",
       "headers": { "X-Memini-Namespace": "zed" },
@@ -63,6 +66,8 @@
     "konflate": {
       "url": "https://konflate.jory.dev/mcp",
     },
+    // macOS-only local servers (Homebrew binaries); off-Mac reached via toolhive.
+    {{- if eq .chezmoi.os "darwin" }}
     "kubectl": {
       "command": "/opt/homebrew/lib/node_modules/@strowk/mcp-k8s-darwin-arm64/bin/mcp-k8s-go",
       "args": [],
@@ -74,6 +79,7 @@
         "KUBECONFIG": "{{ .chezmoi.homeDir }}/.kube/config",
       },
     },
+    {{- end }}
     "dispatch": {
       "command": "npx",
       "args": ["tsx", "{{ .chezmoi.homeDir }}/git/dispatch/src/mcp/server.ts"],
