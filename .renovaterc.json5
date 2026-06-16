@@ -5,4 +5,15 @@
     'github>joryirving/renovate-config',
     ':semanticCommits',
   ],
+  customManagers: [
+    {
+      customType: 'regex',
+      description: 'opencode npm plugins pinned as @scope/name@version',
+      managerFilePatterns: ['/opencode\\.json\\.tmpl$/'],
+      // ["@eleboucher/opencode-memini@0.3.2", { ... }]
+      matchStrings: ['(?<depName>@[\\w.-]+/[\\w.-]+)@(?<currentValue>\\d[\\w.-]*)'],
+      datasourceTemplate: 'npm',
+      versioningTemplate: 'npm',
+    },
+  ],
 }
