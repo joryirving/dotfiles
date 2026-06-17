@@ -2,11 +2,13 @@
   "$schema": "https://opencode.ai/config.json"
 {{- if .personal }}
   , "plugin": [
-    "superpowers@git+https://github.com/obra/superpowers.git#f2cbfbe",
-    ["@eleboucher/opencode-memini@0.4.6", { "base_url": "https://memini.jory.dev", "namespace": "opencode" }]
+    "superpowers@git+https://github.com/obra/superpowers.git#f2cbfbe"
+    {{/* memini disabled — uncomment the line below to re-enable:
+    , ["@eleboucher/opencode-memini@0.4.6", { "base_url": "https://memini.jory.dev", "namespace": "opencode" }]
+    */}}
   ]
   , "enabled_providers": [{{ if eq .chezmoi.os "darwin" }}"lmstudio", {{ end }}"litellm-anthropic", "litellm"]
-  , "model": "litellm/self-hosted"
+  , "model": "litellm/nvidia"
   , "provider": {
     {{- if eq .chezmoi.os "darwin" }}
     {{/* LM Studio runs locally on macOS only; absent off-Mac (Rpi5 jumpbox). */}}
