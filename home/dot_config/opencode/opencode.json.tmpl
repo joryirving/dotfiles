@@ -123,32 +123,38 @@
     {{- end }}
   }
   , "agent": {
-    {{/* Coordinator: a strong cloud reasoning model that plans and delegates
-         concrete execution to the local $0 subagents below via the task tool.
-         Tab to it for orchestration; the everyday default stays nvidia. */}}
+    {{/* Coordinator + role subagents (taxonomy borrowed from oh-my-opencode:
+         explorer/fixer/oracle/reviewer, council as a coordinator behavior).
+         Strong reasoning coordinator plans and delegates via the task tool;
+         everyday default stays `auto`. Tab to coordinator for orchestration. */}}
     "coordinator": {
-      "description": "Reasoning coordinator — plans, then delegates execution to local subagents",
+      "description": "Reasoning coordinator — plans, then delegates to role subagents (explorer/fixer/oracle/reviewer)",
       "mode": "primary",
       "model": "litellm/reasoning-pool",
-      "prompt": "You are a coordinator. Plan the work, then delegate concrete execution to subagents via the task tool, LOCAL-FIRST. When fanning out tasks in parallel, fill local capacity before spilling to cloud: `local` (Qwen 27B, best local) takes up to TWO concurrent tasks (one slot, so the 2nd serializes — but prompt caching keeps that cheap) and `local-bigctx` (self-hosted) up to TWO — about four concurrent locally. Fill order: first two parallel tasks -> `local`, next two -> `local-bigctx`, and only the 5th-and-beyond -> `cloud-fast` (DeepSeek V4 Flash, cloud, unlimited slots). Don't pile more than two concurrent tasks onto `local`. A single task always goes to `local`. Also use `local-bigctx` when context exceeds ~145k or images are involved. Use `local-reviewer` (Gemma) for second opinions and creative/prose only — it is weak at multi-step tool work. Do the high-level reasoning and synthesis yourself; hand off the legwork."
+      "prompt": "You are a coordinator. Do the high-level reasoning and synthesis yourself; delegate the legwork to role subagents via the task tool, local-first.\n\nROLES:\n- `explorer` (cloud dsv4f — cheap, parallel-safe): codebase recon, search, 'where/how is X', read-only. Fan these out freely; it does not consume local slots.\n- `fixer` (nvidia — best/fastest local coder, ONE slot): scoped implementation and edits. Your default code executor.\n- `fixer-bigctx` (self-hosted — TWO slots, vision): implementation needing >145k context or images; also the second local coding lane.\n- `oracle` (reasoning-pool — strongest tier): hard debugging, root-cause, architecture. Read-mostly; return analysis, don't sprawl into edits.\n- `reviewer` (Gemma — different model family): independent second opinion and creative/prose.\n\nPARALLEL CODING: keep ~4 coding tasks in flight locally — up to 2 on `fixer` (its 2nd serializes, but prompt caching keeps it cheap) plus 2 on `fixer-bigctx`. Send further parallel coding to `explorer` (its dsv4f backend also codes well) rather than piling more onto `fixer`. A single task goes to `fixer`.\n\nCOUNCIL (high-stakes review): get independent verdicts from TWO different model families — `reviewer` (Gemma) plus one of `oracle` or `fixer` (Qwen) — then reconcile. Never let one model grade its own work."
     },
-    "local": {
-      "description": "Primary local executor — Qwen3.6-27B, best + fastest local (145k ctx, no vision). One slot: at most TWO concurrent tasks (the 2nd serializes, but prompt caching keeps it cheap)",
-      "mode": "subagent",
-      "model": "litellm/nvidia"
-    },
-    "local-bigctx": {
-      "description": "Second local lane — Qwen3.6-35B-A3B, TWO slots (use for the 3rd–4th parallel task), plus big-context (262k) and vision. Weaker coder than `local`",
-      "mode": "subagent",
-      "model": "litellm/self-hosted"
-    },
-    "cloud-fast": {
-      "description": "Cloud spillover — DeepSeek V4 Flash (1M ctx, cheap, unlimited slots). Use only once local is full (2 on `local` + 2 on `local-bigctx`), i.e. the 5th+ concurrent task",
+    "explorer": {
+      "description": "Recon — codebase scouting, search, 'where/how is X', read-only. Cloud (dsv4f): cheap and parallel-safe, fan out freely without touching local slots",
       "mode": "subagent",
       "model": "litellm/dsv4f"
     },
-    "local-reviewer": {
-      "description": "Reviewer / creative — Gemma-4-26B. Strong one-shot codegen, math, and prose; weak at agentic/repo SWE + tool harnesses. Use for second opinions and creative writing, not multi-step tool work",
+    "fixer": {
+      "description": "Scoped implementation — Qwen3.6-27B, best + fastest local coder (145k, no vision). ONE slot: at most two concurrent (2nd serializes, prompt caching keeps it cheap)",
+      "mode": "subagent",
+      "model": "litellm/nvidia"
+    },
+    "fixer-bigctx": {
+      "description": "Big-context / vision implementation — Qwen3.6-35B-A3B (262k, vision), TWO slots. Use when context exceeds 145k or images are involved; also the 2nd local coding lane. Weaker coder than `fixer`",
+      "mode": "subagent",
+      "model": "litellm/self-hosted"
+    },
+    "oracle": {
+      "description": "Hard debugging / architecture — reasoning-pool (strongest tier). Read-mostly deep analysis; return a recommendation, don't sprawl into edits",
+      "mode": "subagent",
+      "model": "litellm/reasoning-pool"
+    },
+    "reviewer": {
+      "description": "Independent review / creative — Gemma-4-26B (different model family). Second opinions and prose; weak at multi-step tool work, so don't hand it agentic repo tasks",
       "mode": "subagent",
       "model": "litellm/review"
     },
