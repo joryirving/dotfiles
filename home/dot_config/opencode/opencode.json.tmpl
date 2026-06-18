@@ -130,12 +130,17 @@
       "description": "Reasoning coordinator — plans, then delegates execution to local subagents",
       "mode": "primary",
       "model": "litellm/reasoning-pool",
-      "prompt": "You are a coordinator. Plan the work, then delegate concrete execution to your local subagents via the task tool to keep cost and latency low. Default to `local` (Qwen 27B — the best and fastest local model) for most coding, edits, and config. Use `local-bigctx` only when the context exceeds ~145k or images are involved (it is slower and a weaker coder). Use `local-reviewer` (Gemma) for second opinions and creative/prose only — it is weak at multi-step tool work, so don't hand it agentic repo tasks. Do the high-level reasoning and synthesis yourself; hand off the legwork."
+      "prompt": "You are a coordinator. Plan the work, then delegate concrete execution to subagents via the task tool. PREFER `local` (Qwen 27B — best/fastest local, $0) for essentially all delegated work; it is your default executor. Only reach for `cloud-fast` (DeepSeek V4 Flash) when you deliberately need to rush — i.e. you are fanning out several tasks at once and `local`'s single slot would serialize them. A single task, or work you're not in a hurry on, always goes to `local`. Use `local-bigctx` when context exceeds ~145k or images are involved. Use `local-reviewer` (Gemma) for second opinions and creative/prose only — it is weak at multi-step tool work, so don't hand it agentic repo tasks. Do the high-level reasoning and synthesis yourself; hand off the legwork, local-first."
     },
     "local": {
-      "description": "Primary local executor — Qwen3.6-27B, the best + fastest local model (145k ctx, no vision). Default for delegated coding, edits, config, transforms",
+      "description": "Primary local executor — Qwen3.6-27B, the best + fastest local model (145k ctx, no vision). The default for ALL delegated work; one slot, so it serializes under heavy parallel fan-out",
       "mode": "subagent",
       "model": "litellm/nvidia"
+    },
+    "cloud-fast": {
+      "description": "Rush escape hatch — DeepSeek V4 Flash (1M ctx, cheap, no slot limit). Use ONLY when fanning out several parallel tasks that would serialize on local's single slot; otherwise always prefer `local`",
+      "mode": "subagent",
+      "model": "litellm/dsv4f"
     },
     "local-bigctx": {
       "description": "Big-context / vision local — Qwen3.6-35B-A3B (262k ctx, vision). Use only when context exceeds nvidia's 145k or images are needed; otherwise weaker than `local`",

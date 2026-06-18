@@ -233,6 +233,13 @@
       "model": "nvidia",
       "enable_thinking": false,
     },
+    // Zed has ONE global subagent model (no per-task choice like opencode), so it
+    // can't do the "rush → dsv4f" escape — keep subagents local-first on nvidia.
+    "subagent_model": {
+      "provider": "LiteLLM",
+      "model": "nvidia",
+      "enable_thinking": false,
+    },
     "sidebar_side": "right",
     "dock": "right",
     "favorite_models": [
