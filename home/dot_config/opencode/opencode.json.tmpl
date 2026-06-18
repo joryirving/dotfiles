@@ -4,7 +4,7 @@
   , "plugin": [
     "superpowers@git+https://github.com/obra/superpowers.git#f2cbfbe"
     {{/* memini disabled — uncomment the line below to re-enable:
-    , ["@eleboucher/opencode-memini@0.4.8", { "base_url": "https://memini.jory.dev", "namespace": "opencode" }]
+    , ["@eleboucher/opencode-memini@0.4.9", { "base_url": "https://memini.jory.dev", "namespace": "opencode" }]
     */}}
   ]
   , "enabled_providers": [{{ if eq .chezmoi.os "darwin" }}"lmstudio", {{ end }}"litellm-anthropic", "litellm"]
