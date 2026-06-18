@@ -8,7 +8,7 @@
     */}}
   ]
   , "enabled_providers": [{{ if eq .chezmoi.os "darwin" }}"lmstudio", {{ end }}"litellm-anthropic", "litellm"]
-  , "model": "litellm/nvidia"
+  , "model": "litellm/auto"
   , "provider": {
     {{- if eq .chezmoi.os "darwin" }}
     {{/* LM Studio runs locally on macOS only; absent off-Mac (Rpi5 jumpbox). */}}
