@@ -13,7 +13,7 @@ if ! command -v brew >/dev/null 2>&1; then
 fi
 
 echo "[INFO] brew bundle --global (install missing packages)..." >&2
-# --no-upgrade: leave upgrades to topgrade. --no-lock: don't write ~/.Brewfile.lock.json.
-if ! brew bundle install --global --no-upgrade --no-lock; then
+# --no-upgrade: leave upgrades to topgrade (current brew bundle writes no lock file).
+if ! brew bundle install --global --no-upgrade; then
   echo "[WARN] brew bundle reported failures; continuing apply" >&2
 fi
