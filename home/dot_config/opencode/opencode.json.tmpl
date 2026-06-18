@@ -130,22 +130,22 @@
       "description": "Reasoning coordinator — plans, then delegates execution to local subagents",
       "mode": "primary",
       "model": "litellm/reasoning-pool",
-      "prompt": "You are a coordinator. Plan the work, then delegate concrete execution to subagents via the task tool. PREFER `local` (Qwen 27B — best/fastest local, $0) for essentially all delegated work; it is your default executor. Only reach for `cloud-fast` (DeepSeek V4 Flash) when you deliberately need to rush — i.e. you are fanning out several tasks at once and `local`'s single slot would serialize them. A single task, or work you're not in a hurry on, always goes to `local`. Use `local-bigctx` when context exceeds ~145k or images are involved. Use `local-reviewer` (Gemma) for second opinions and creative/prose only — it is weak at multi-step tool work, so don't hand it agentic repo tasks. Do the high-level reasoning and synthesis yourself; hand off the legwork, local-first."
+      "prompt": "You are a coordinator. Plan the work, then delegate concrete execution to subagents via the task tool, LOCAL-FIRST. Respect local slot capacity when running tasks in parallel: `local` (Qwen 27B, best local) has ONE slot and `local-bigctx` (self-hosted) has TWO — about three concurrent tasks locally. Fill local first when fanning out: 1st parallel task -> `local`, next two -> `local-bigctx`, and only the 4th-and-beyond -> `cloud-fast` (DeepSeek V4 Flash, cloud, unlimited slots). NEVER assign multiple concurrent tasks to `local` — it has one slot and they will serialize (do not spin up several `local` subagents at once). A single task always goes to `local`. Also use `local-bigctx` when context exceeds ~145k or images are involved. Use `local-reviewer` (Gemma) for second opinions and creative/prose only — it is weak at multi-step tool work. Do the high-level reasoning and synthesis yourself; hand off the legwork."
     },
     "local": {
-      "description": "Primary local executor — Qwen3.6-27B, the best + fastest local model (145k ctx, no vision). The default for ALL delegated work; one slot, so it serializes under heavy parallel fan-out",
+      "description": "Primary local executor — Qwen3.6-27B, best + fastest local (145k ctx, no vision). ONE slot: give it a single concurrent task at a time; never pile parallel work onto it",
       "mode": "subagent",
       "model": "litellm/nvidia"
     },
-    "cloud-fast": {
-      "description": "Rush escape hatch — DeepSeek V4 Flash (1M ctx, cheap, no slot limit). Use ONLY when fanning out several parallel tasks that would serialize on local's single slot; otherwise always prefer `local`",
-      "mode": "subagent",
-      "model": "litellm/dsv4f"
-    },
     "local-bigctx": {
-      "description": "Big-context / vision local — Qwen3.6-35B-A3B (262k ctx, vision). Use only when context exceeds nvidia's 145k or images are needed; otherwise weaker than `local`",
+      "description": "Second local lane — Qwen3.6-35B-A3B, TWO slots (use for the 2nd–3rd parallel task), plus big-context (262k) and vision. Weaker coder than `local`",
       "mode": "subagent",
       "model": "litellm/self-hosted"
+    },
+    "cloud-fast": {
+      "description": "Cloud spillover — DeepSeek V4 Flash (1M ctx, cheap, unlimited slots). Use only once local slots are full (1 on `local` + 2 on `local-bigctx`), i.e. the 4th+ concurrent task",
+      "mode": "subagent",
+      "model": "litellm/dsv4f"
     },
     "local-reviewer": {
       "description": "Reviewer / creative — Gemma-4-26B. Strong one-shot codegen, math, and prose; weak at agentic/repo SWE + tool harnesses. Use for second opinions and creative writing, not multi-step tool work",
