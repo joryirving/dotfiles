@@ -186,6 +186,31 @@
             "max_tokens": 400000,
             "max_output_tokens": 128000,
             "capabilities": { "tools": true, "images": true, "parallel_tool_calls": true, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
+          },
+          {
+            "name": "glm-5.2",
+            "max_tokens": 1000000,
+            "max_output_tokens": 16384,
+            "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
+          },
+          {
+            "name": "go-glm-5.1",
+            "max_tokens": 203000,
+            "max_output_tokens": 16384,
+            "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
+          },
+          // reasoning-pool: load-balanced glm-5.2/dsv4p/kimi. auto: complexity router.
+          {
+            "name": "reasoning-pool",
+            "max_tokens": 262144,
+            "max_output_tokens": 16384,
+            "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
+          },
+          {
+            "name": "auto",
+            "max_tokens": 145000,
+            "max_output_tokens": 16384,
+            "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": false, "chat_completions": true, "interleaved_reasoning": false }
           }
         ]
       }
@@ -211,6 +236,7 @@
     "sidebar_side": "right",
     "dock": "right",
     "favorite_models": [
+      { "provider": "LiteLLM", "model": "reasoning-pool", "enable_thinking": false },
       { "provider": "LiteLLM", "model": "self-hosted", "enable_thinking": false },
       { "provider": "anthropic", "model": "MiniMax", "enable_thinking": false },
       { "provider": "LiteLLM", "model": "dsv4f", "enable_thinking": false },

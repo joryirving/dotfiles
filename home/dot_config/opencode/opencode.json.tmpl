@@ -60,7 +60,13 @@
         "qwen3.7-plus": { "name": "Qwen3.7 Plus", "limit": { "context": 1000000, "output": 16384 } },
         "chatgpt/gpt-5.5": { "name": "ChatGPT GPT-5.5", "limit": { "context": 400000, "output": 128000 } },
         "chatgpt/gpt-5.4": { "name": "ChatGPT GPT-5.4", "limit": { "context": 400000, "output": 128000 } },
-        "chatgpt/gpt-5.4-mini": { "name": "ChatGPT GPT-5.4 Mini", "limit": { "context": 400000, "output": 128000 } }
+        "chatgpt/gpt-5.4-mini": { "name": "ChatGPT GPT-5.4 Mini", "limit": { "context": 400000, "output": 128000 } },
+        "review": { "name": "Review (Gemma / GLM-Flash)", "limit": { "context": 204800, "output": 16384 } },
+        "glm-5.2": { "name": "GLM 5.2", "limit": { "context": 1000000, "output": 16384 } },
+        "go-glm-5.1": { "name": "Go GLM 5.1", "limit": { "context": 203000, "output": 16384 } },
+        {{/* reasoning-pool: load-balanced glm-5.2/dsv4p/kimi (coordinator). auto: complexity router. */}}
+        "reasoning-pool": { "name": "Reasoning Pool", "limit": { "context": 262144, "output": 16384 } },
+        "auto": { "name": "Auto (router)", "limit": { "context": 145000, "output": 16384 } }
       }
     }
   }
@@ -117,6 +123,30 @@
     {{- end }}
   }
   , "agent": {
+    {{/* Coordinator: a strong cloud reasoning model that plans and delegates
+         concrete execution to the local $0 subagents below via the task tool.
+         Tab to it for orchestration; the everyday default stays nvidia. */}}
+    "coordinator": {
+      "description": "Reasoning coordinator — plans, then delegates execution to local subagents",
+      "mode": "primary",
+      "model": "litellm/reasoning-pool",
+      "prompt": "You are a coordinator. Plan the work, then delegate concrete execution to your local subagents via the task tool to keep cost and latency low. Default to `local` (Qwen 27B — the best and fastest local model) for most coding, edits, and config. Use `local-bigctx` only when the context exceeds ~145k or images are involved (it is slower and a weaker coder). Use `local-reviewer` (Gemma) for second opinions and creative/prose only — it is weak at multi-step tool work, so don't hand it agentic repo tasks. Do the high-level reasoning and synthesis yourself; hand off the legwork."
+    },
+    "local": {
+      "description": "Primary local executor — Qwen3.6-27B, the best + fastest local model (145k ctx, no vision). Default for delegated coding, edits, config, transforms",
+      "mode": "subagent",
+      "model": "litellm/nvidia"
+    },
+    "local-bigctx": {
+      "description": "Big-context / vision local — Qwen3.6-35B-A3B (262k ctx, vision). Use only when context exceeds nvidia's 145k or images are needed; otherwise weaker than `local`",
+      "mode": "subagent",
+      "model": "litellm/self-hosted"
+    },
+    "local-reviewer": {
+      "description": "Reviewer / creative — Gemma-4-26B. Strong one-shot codegen, math, and prose; weak at agentic/repo SWE + tool harnesses. Use for second opinions and creative writing, not multi-step tool work",
+      "mode": "subagent",
+      "model": "litellm/review"
+    },
     "lean": {
       "description": "Minimal MCP context — toolhive router only (reaches other MCPs via call_tool)",
       "mode": "primary",
