@@ -3,4 +3,5 @@
      bundle and a common linux install path in addition to lookPath. */}}
 {{- if not (or (stat "/Applications/Zed.app") (stat (joinPath .chezmoi.homeDir ".local/bin/zed")) (lookPath "zed")) }}
 .config/zed/settings.json
+.config/zed/AGENTS.md
 {{- end }}
