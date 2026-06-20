@@ -66,13 +66,6 @@
       "command": "/opt/homebrew/lib/node_modules/@strowk/mcp-k8s-darwin-arm64/bin/mcp-k8s-go",
       "args": [],
     },
-    "flux": {
-      "command": "/opt/homebrew/bin/flux-operator-mcp",
-      "args": ["serve"],
-      "env": {
-        "KUBECONFIG": "{{ .chezmoi.homeDir }}/.kube/config",
-      },
-    },
     "dispatch": {
       "command": "npx",
       "args": ["tsx", "{{ .chezmoi.homeDir }}/git/dispatch/src/mcp/server.ts"],
@@ -246,9 +239,9 @@
     ],
     "model_parameters": [],
     // Custom profiles to trim MCP context (built-in write/ask/minimal still apply).
-    // tool footprint (defs): kubectl ~23KB, github ~17KB, memory ~10KB, flux ~8KB,
-    // context7 ~5KB, toolhive ~2KB. toolhive is a router (call_tool/find_tool) that
-    // reaches every other MCP on demand without injecting their schemas.
+    // tool footprint (defs): kubectl ~23KB, github ~17KB, memory ~10KB, context7 ~5KB,
+    // toolhive ~2KB. toolhive is a router (call_tool/find_tool) that reaches every
+    // other MCP on demand without injecting their schemas.
     "profiles": {
       "lean": {
         "name": "Lean",
@@ -282,17 +275,6 @@
             "uninstall_helm_chart": true, "node_management": true, "port_forward": true,
             "stop_port_forward": true, "exec_in_pod": true, "list_api_resources": true,
             "kubectl_generic": true, "ping": true
-          } },
-          "flux": { "tools": {
-            "apply_kubernetes_manifest": true, "delete_kubernetes_resource": true,
-            "get_flux_instance": true, "get_kubeconfig_contexts": true,
-            "get_kubernetes_api_versions": true, "get_kubernetes_logs": true,
-            "get_kubernetes_metrics": true, "get_kubernetes_resources": true,
-            "install_flux_instance": true, "reconcile_flux_helmrelease": true,
-            "reconcile_flux_kustomization": true, "reconcile_flux_resourceset": true,
-            "reconcile_flux_source": true, "resume_flux_reconciliation": true,
-            "search_flux_docs": true, "set_kubeconfig_context": true,
-            "suspend_flux_reconciliation": true
           } },
           "konflate": { "tools": {
             "list_pull_requests": true, "get_pr_summary": true, "get_pr_diff": true

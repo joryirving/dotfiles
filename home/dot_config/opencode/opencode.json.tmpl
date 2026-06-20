@@ -111,14 +111,6 @@
       "command": ["/opt/homebrew/lib/node_modules/@strowk/mcp-k8s-darwin-arm64/bin/mcp-k8s-go"],
       "enabled": true
     }
-    , "flux": {
-      "type": "local",
-      "command": ["/opt/homebrew/bin/flux-operator-mcp", "serve"],
-      "enabled": true,
-      "environment": {
-        "KUBECONFIG": "{{ .chezmoi.homeDir }}/.kube/config"
-      }
-    }
     {{- end }}
   }
   , "agent": {
@@ -164,25 +156,24 @@
         "mcp-server-context7*": false,
         "github*": false,
         "kubectl*": false,
-        "flux*": false,
         "konflate*": false,
         "dispatch*": false
       }
     },
     "gitops": {
-      "description": "Cluster ops — kubectl/flux/konflate direct on macOS; via toolhive router off-Mac",
+      "description": "Cluster ops — kubectl/konflate direct on macOS; via toolhive router off-Mac",
       "mode": "primary",
       "tools": {
         "mcp-server-context7*": false,
         "github*": false,
         "dispatch*": false
         {{- if eq .chezmoi.os "darwin" }}
-        {{/* kubectl/flux run as local binaries here, so reach them directly and
+        {{/* kubectl run as local binary here, so reach them directly and
              skip the toolhive router. */}}
         , "toolhive*": false
         {{- end }}
         {{/* Off-Mac the local binaries are absent (see mcp block), so toolhive is
-             left enabled — its find_tool/call_tool router reaches kubectl/flux/etc. */}}
+             left enabled — its find_tool/call_tool router reaches kubectl/etc. */}}
       }
     }
   }
