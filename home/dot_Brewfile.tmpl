@@ -19,6 +19,7 @@ brew "fastfetch"
 brew "fish"
 brew "gh"
 brew "helm"
+brew "jq"
 brew "k9s"
 brew "krew"
 brew "kubecolor"
@@ -29,7 +30,7 @@ brew "zoxide"
 {{- if .personal }}
 
 # ── personal machines (personal mac + rpi5) ──────────────────────────────
-brew "jq"
+brew "btop"
 {{- end }}
 
 {{- if eq .chezmoi.os "darwin" }}
