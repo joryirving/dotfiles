@@ -47,6 +47,7 @@
       },
       "models": {
         "self-hosted": { "name": "Qwen3.6-35B-A3B", "limit": { "context": 262144, "output": 16384 } },
+        "ornith": { "name": "Ornith 1.0 35B", "limit": { "context": 262144, "output": 16384 } },
         "nvidia": { "name": "Qwen3.6-27B", "limit": { "context": 131072, "output": 16384 } },
         "kimi-k2.6": { "name": "Kimi K2.6", "limit": { "context": 262144, "output": 16384 } },
         "glm-5.1": { "name": "GLM 5.1", "limit": { "context": 203000, "output": 16384 } },
@@ -115,14 +116,14 @@
   }
   , "agent": {
     {{/* Coordinator + role subagents (taxonomy borrowed from oh-my-opencode:
-         explorer/fixer/oracle/reviewer, council as a coordinator behavior).
+         explorer/fixer/ornith/oracle/reviewer, council as a coordinator behavior).
          Strong reasoning coordinator plans and delegates via the task tool;
          everyday default stays `auto`. Tab to coordinator for orchestration. */}}
     "coordinator": {
-      "description": "Reasoning coordinator — plans, then delegates to role subagents (explorer/fixer/oracle/reviewer)",
+      "description": "Reasoning coordinator — plans, then delegates to role subagents (explorer/fixer/ornith/oracle/reviewer)",
       "mode": "primary",
       "model": "litellm/reasoning-pool",
-      "prompt": "You are a coordinator. Do the high-level reasoning and synthesis yourself; delegate the legwork to role subagents via the task tool, local-first.\n\nROLES:\n- `explorer` (cloud dsv4f — cheap, parallel-safe): codebase recon, search, 'where/how is X', read-only. Fan these out when you need speed.\n- `fixer` (nvidia — best/fastest local coder): scoped implementation and edits. Your default code executor; the smaller but highest-quality local lane.\n- `fixer-bigctx` (self-hosted — vision): implementation needing >131k context or images; your high-parallelism local lane for the bulk of concurrent fan-out.\n- `oracle` (reasoning-pool — strongest tier): hard debugging, root-cause, architecture. Read-mostly; return analysis, don't sprawl into edits.\n- `reviewer` (Minimax M3 — different family from the Qwen coders): independent second opinion and creative/prose.\n\nPARALLEL CODING: prefer `fixer` for the most important work, fan the bulk of concurrent tasks onto `fixer-bigctx` (the larger local lane), and only spill overflow to `explorer` (its dsv4f backend also codes well) once local is saturated. A few tasks goes to `fixer`.\n\nCOUNCIL (high-stakes review): get independent verdicts from two different model families — `reviewer` (Minimax) plus `fixer` (Qwen) — then reconcile. Never let one model grade its own work."
+      "prompt": "You are a coordinator. Do the high-level reasoning and synthesis yourself; delegate the legwork to role subagents via the task tool, local-first.\n\nROLES:\n- `explorer` (cloud dsv4f — cheap, parallel-safe): codebase recon, search, 'where/how is X', read-only. Fan these out when you need speed.\n- `fixer` (nvidia — best/fastest local coder): scoped implementation and edits. Your default code executor; the smaller but highest-quality local lane.\n- `ornith` (Ornith 1.0 35B — agentic-coding MoE): standalone coding lane (262k, no vision). Smarter/faster than `fixer-bigctx`, but not as smart/fast as `fixer`; use for independent implementation attempts, alternative fixes, or extra parallel coding capacity.\n- `fixer-bigctx` (self-hosted — vision): implementation needing >131k context or images; use when vision is needed or `ornith`/`fixer` are saturated. Weaker and slower than `ornith`.\n- `oracle` (reasoning-pool — strongest tier): hard debugging, root-cause, architecture. Read-mostly; return analysis, don't sprawl into edits.\n- `reviewer` (Minimax M3 — different family from the Qwen coders): independent second opinion and creative/prose.\n\nPARALLEL CODING: prefer `fixer` for the most important work, use `ornith` as the next local coding lane, use `fixer-bigctx` for vision or overflow, and only spill overflow to `explorer` (its dsv4f backend also codes well) once local is saturated. A few tasks goes to `fixer`.\n\nCOUNCIL (high-stakes review): get independent verdicts from two different model families — `reviewer` (Minimax) plus `fixer` (Qwen) — then reconcile. Never let one model grade its own work."
     },
     "explorer": {
       "description": "Recon — codebase scouting, search, 'where/how is X', read-only. Cloud (dsv4f): cheap and parallel-safe, fan out freely for speed, if local slots are busy",
@@ -134,8 +135,13 @@
       "mode": "subagent",
       "model": "litellm/nvidia"
     },
+    "ornith": {
+      "description": "Standalone coding lane — Ornith 1.0 35B agentic-coding MoE (262k, no vision). Smarter/faster than `fixer-bigctx`, but not as smart/fast as `fixer`; use for independent implementation attempts, alternative fixes, or extra parallel coding capacity.",
+      "mode": "subagent",
+      "model": "litellm/ornith"
+    },
     "fixer-bigctx": {
-      "description": "Big-context / vision implementation — Qwen3.6-35B-A3B (262k, vision). Use when context exceeds 131k or images are involved; the high-parallelism local lane for the bulk of concurrent fan-out. Weaker coder than `fixer`. Slower PP/TG than `fixer`",
+      "description": "Big-context / vision implementation — Qwen3.6-35B-A3B (262k, vision). Use when vision is needed or `fixer`/`ornith` are saturated. Weaker and slower than `ornith`.",
       "mode": "subagent",
       "model": "litellm/self-hosted"
     },
