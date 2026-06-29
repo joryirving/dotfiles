@@ -1,0 +1,13 @@
+    "litellm-anthropic": {
+      "npm": "@ai-sdk/anthropic",
+      "name": "LiteLLM Anthropic",
+      "options": {
+        "baseURL": "https://litellm.jory.dev/v1",
+        "authToken": "{{ onepasswordRead "op://Kubernetes/litellm/LITELLM_MASTER_KEY" }}",
+        "timeout": 300000
+      },
+      "models": {
+        "MiniMax-M2.7": { "name": "MiniMax M2.7" },
+        "MiniMax": { "name": "MiniMax M3" }
+      }
+    }
