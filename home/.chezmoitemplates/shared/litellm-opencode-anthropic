@@ -8,6 +8,6 @@
       },
       "models": {
         "MiniMax-M2.7": { "name": "MiniMax M2.7" },
-        "MiniMax": { "name": "MiniMax M3" }
+        "MiniMax-M3": { "name": "MiniMax M3" }
       }
     }
