@@ -1,22 +1,16 @@
 name: AI PR Review
 
-# Autonomous AI review on every PR. Reviews the local diff, and when a PR
-# touches a pinned upstream dependency (git pins, npm plugin versions) the
-# action's tool harness follows the pin upstream via gh_api and scans the
-# transitive code for exfiltration, prompt injection, non-loopback binds, and
-# secret reads. See .github/ai-review-rules.md for the repo-local prompt that
-# drives the upstream scan, and .renovaterc.json5 for how the pin-bump PRs that
-# most need this review get opened (obra/superpowers is automerge: false,
-# labeled security-review).
-
 on:
   pull_request:
+    # `labeled` enables the one-click re-review: add the `ai-review` label to
+    # force a fresh review (only write/triage can label — self-authorizing).
     types: [opened, reopened, synchronize, ready_for_review, labeled]
   workflow_dispatch:
 
-# Cancel a stale review run when the same PR gets a new push.
 concurrency:
-  group: ai-pr-review-${{ github.event.pull_request.number }}
+  # `labeled` events get their own group so an auto-applied label (Renovate
+  # adds several at PR creation) can't cancel the in-flight opened review.
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}${{ github.event.action == 'labeled' && format('-label-{0}', github.run_id) || '' }}
   cancel-in-progress: true
 
 permissions:
@@ -25,83 +19,67 @@ permissions:
 
 jobs:
   review:
-    if: ${{ !github.event.pull_request.draft }}
+    if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
 
-      - uses: misospace/pr-reviewer-action@7e25f7d0d8651e936f3158477b0a364f27ed7383 # v2.0.0
+      - name: Generate bot token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          client-id: ${{ secrets.SAFFRON_CLIENT_ID }}
+          private-key: ${{ secrets.SAFFRON_APP_PRIVATE_KEY }}
+          permission-contents: read
+          permission-pull-requests: write
 
-          # --- Models: mirrors the home-ops Actions variable layout. All three
-          # tiers share the LiteLLM endpoint; the *_FORMAT variables route them
-          # to the right API style (openai vs anthropic). Add the matching
-          # variables + the LITELLM_API_KEY secret in repo settings.
+      - name: Analyze PR with reusable AI reviewer
+        if: github.event_name == 'pull_request'
+        id: analyze
+        uses: misospace/pr-reviewer-action@b36ea146c6563a3f49a5b9a232d411f6cf970474 # v2.0.5
+        with:
+          github_token: ${{ steps.app-token.outputs.token }}
+          ai_primary_retries: "3"
+          ai_primary_retry_delay_sec: "15"
           ai_base_url: ${{ vars.LITELLM_URL }}
-          ai_api_key: ${{ secrets.LITELLM_API_KEY }}
           ai_api_format: ${{ vars.PRIMARY_FORMAT }}
           ai_model: ${{ vars.PRIMARY_MODEL }}
-
+          ai_api_key: ${{ secrets.LITELLM_API_KEY }}
+          ai_response_format: json_object
+          ai_max_tokens: ${{ vars.AI_MAX_TOKENS || '16000' }}
           ai_fallback_base_url: ${{ vars.LITELLM_URL }}
-          ai_fallback_api_key: ${{ secrets.LITELLM_API_KEY }}
           ai_fallback_api_format: ${{ vars.FALLBACK_FORMAT }}
           ai_fallback_model: ${{ vars.FALLBACK_MODEL }}
-
-          # --- Routing: routine PRs hit the primary; security-relevant risk
-          # flags escalate to the smart tier (different model family — second
-          # opinion, same logic as the opencode reviewer agent).
+          ai_fallback_api_key: ${{ secrets.LITELLM_API_KEY }}
           review_routing_mode: auto
           ai_smart_base_url: ${{ vars.LITELLM_URL }}
-          ai_smart_api_key: ${{ secrets.LITELLM_API_KEY }}
           ai_smart_api_format: ${{ vars.SMART_FORMAT }}
           ai_smart_model: ${{ vars.SMART_MODEL }}
-          # Tightened from the action default: drop flags that don't apply to a
-          # dotfiles repo (linked_priority_*, db_or_migration) and keep the
-          # security-relevant set so a tampered auth/secret/path line escalates
-          # but a text-only change doesn't burn smart-tier tokens.
-          escalate_on_risk_flags: >-
-            auth_changes,
-            public_route_changes,
-            file_serving_changes,
-            path_handling_changes,
-            secret_handling_changes
-
-          # --- Tool harness: the part that makes this an upstream scanner
-          # instead of a local-diff-only gate. native_loop lets the model call
-          # gh_api to fetch the upstream compare diff and reason over it.
-          # tool_allowed_gh_api_repos is scoped to the upstream we actually pin
-          # (default empty = current-repo-only, which would block the fetch; "*"
-          # would be wider than necessary).
+          ai_smart_api_key: ${{ secrets.LITELLM_API_KEY }}
+          allowed_source_hosts: "*"
+          context_limit_mode: normal
+          ci_status_check: "true"
+          ci_timeout_sec: "1200"
           tool_mode: native_loop
-          tool_allowed_gh_api_repos: obra/superpowers
-          # Fork safety: never run tools on fork PRs (secret-read / exfil risk
-          # from untrusted code paths).
+          tool_max_rounds: "2"
+          tool_max_requests: "4"
+          tool_loop_wall_clock_sec: "300"
+          tool_planning_timeout_sec: "300"
+          tool_planning_max_context_bytes: "15000"
+          tool_planning_max_tokens: "16000"
+          tool_max_response_bytes: "12000"
+          tool_allowed_gh_api_repos: "*"
+          tool_request_timeout_sec: "15"
           tool_enable_for_forks: "false"
-
-          # --- Output: native non-blocking review with line-anchored findings
-          # on the diff (e.g. flag the exact bumped hash line).
-          publish_mode: review_comment
+          standards_file_candidates: ".github/ai-review-rules.md"
+          on_model_failure: notice
           inline_findings: "true"
-
-          # --- Verdict safety: a blocker-severity finding deterministically
-          # forces request_changes, regardless of the model's overall mood.
-          # Safer than 'model' for a security gate.
           verdict_policy: findings_severity_gated
-
-          # --- Context budget: Ornith (self-hosted) has a 262k window per the
-          # litellm-opencode-models template; setting it explicitly derives the
-          # corpus/diff budget correctly instead of the 'normal' mode's 140k
-          # assumption. Raised max_tokens so reasoning models don't truncate
-          # the verdict and fail to parse (documented failure mode).
-          model_context_tokens: "262144"
-          ai_max_tokens: "16384"
-
-          # --- Append (not replace) the repo-local rules in
-          # .github/ai-review-rules.md on top of the bundled default prompt,
-          # so we keep PR classification and add the security directives.
-          system_prompt_mode: append
+          publish_mode: review_verdict
+          allow_approve: "true"
