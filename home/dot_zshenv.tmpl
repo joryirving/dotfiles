@@ -1,0 +1,32 @@
+# ~/.zshenv — sourced by every zsh (interactive, login, non-interactive).
+# Mirrors the PATH that fish sets in conf.d/{00-env,10-homebrew,20-mise}.fish,
+# so non-interactive zsh (agents, scripts, git hooks) sees the same tools.
+# Keep lean: no env vars, no GNU coreutils opt-paths (BSD defaults are fine
+# for non-interactive use). Re-sourcing is safe — `typeset -U path` dedupes.
+
+typeset -U path
+
+{{- if (eq .chezmoi.os "darwin") }}
+# Homebrew (mirrors ~/.zprofile + 10-homebrew.fish)
+if command -v brew >/dev/null 2>&1; then
+  eval "$(brew shellenv)"
+elif [ -x /opt/homebrew/bin/brew ]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
+{{- else if (eq .chezmoi.os "linux") }}
+if [ -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
+  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+fi
+{{- end }}
+
+# mise shims — static, work without `mise activate` in any shell; auto-updated
+# by mise when tools are added. Equivalent of `mise activate --shims` (20-mise.fish).
+path=(
+  "{{ .chezmoi.homeDir }}/.local/share/mise/shims"
+  "{{ .chezmoi.homeDir }}/.local/bin"
+  "{{ .chezmoi.homeDir }}/.cargo/bin"
+  "{{ .chezmoi.homeDir }}/.krew/bin"
+  "{{ .chezmoi.homeDir }}/.go/bin"
+  "{{ .chezmoi.homeDir }}/.opencode/bin"
+  $path
+)
