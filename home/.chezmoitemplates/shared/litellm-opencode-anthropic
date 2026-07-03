@@ -3,7 +3,7 @@
       "name": "LiteLLM Anthropic",
       "options": {
         "baseURL": "https://litellm.jory.dev/v1",
-        "authToken": "{{ onepasswordRead "op://Kubernetes/litellm/LITELLM_MASTER_KEY" }}",
+        "authToken": "{{ onepasswordRead "op://Kubernetes/litellm/LITELLM_OPENCODE_API_KEY" }}",
         "timeout": 300000
       },
       "models": {
