@@ -8,8 +8,11 @@ set -gx PY_COLORS true
 set -gx GPG_TTY (tty)
 set -gx LANG en_US.utf-8
 {{- if .personal }}
-# memini bearer token — opencode's memini plugin reads it from env only
-set -gx MEMINI_API_KEY "{{ onepasswordRead "op://Kubernetes/memini/MEMINI_API_KEY" }}"
+# memini bearer token — opencode's memini plugin reads it from env only.
+# Scoped named key (defaults to the `opencode` namespace server-side); pass an
+# explicit X-Memini-Namespace header to act on other namespaces, or pull the
+# admin key from the cluster secret for key-management ops.
+set -gx MEMINI_API_KEY "{{ onepasswordRead "op://Kubernetes/memini/OPENCODE_API_KEY" }}"
 {{- end }}
 
 fish_add_path --global "{{ .chezmoi.homeDir }}/.local/bin"
