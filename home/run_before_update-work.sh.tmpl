@@ -1,0 +1,26 @@
+{{- if not .personal -}}
+#!/usr/bin/env bash
+# =============================================================================
+# Fast-forward the `work` submodule (.chezmoitemplates/work) to origin/main on
+# every apply. Runs `before` file entries so includeTemplate "work/..." renders
+# the latest content in the same pass. Work machines only (empty on personal,
+# which chezmoi then skips). Non-fatal: stale content beats a failed apply.
+# =============================================================================
+set -uo pipefail
+
+work="{{ .chezmoi.sourceDir }}/.chezmoitemplates/work"
+
+if ! git -C "$work" rev-parse --git-dir >/dev/null 2>&1; then
+  echo "[INFO] work submodule not initialized at $work; skipping" >&2
+  exit 0
+fi
+
+if ! git -C "$work" fetch --quiet origin main; then
+  echo "[WARN] could not fetch dotfiles-work; using checked-out content" >&2
+  exit 0
+fi
+
+if ! git -C "$work" merge --quiet --ff-only origin/main; then
+  echo "[WARN] could not fast-forward dotfiles-work to origin/main" >&2
+fi
+{{- end -}}
