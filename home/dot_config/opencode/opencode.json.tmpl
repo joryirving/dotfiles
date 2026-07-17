@@ -8,7 +8,7 @@
          replies (#86). Auth = MEMINI_API_KEY env (scoped opencode key via fish env);
          explicit namespace pinned so per-repo git-basename resolution doesn't
          fragment the existing `opencode` memories. */}}
-    , ["@eleboucher/opencode-memini@0.7.3", { "base_url": "https://memini.jory.dev", "namespace": "opencode" }]
+    , ["@eleboucher/opencode-memini@0.7.4", { "base_url": "https://memini.jory.dev", "namespace": "opencode" }]
   ]
   , "enabled_providers": [{{ if eq .chezmoi.os "darwin" }}"lmstudio", {{ end }}"litellm-anthropic", "litellm"]
   , "model": "litellm/auto"
