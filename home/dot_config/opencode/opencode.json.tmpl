@@ -38,6 +38,9 @@
       },
       "models": {
 {{ template "shared/litellm-opencode-models" . }},
+        "chatgpt/gpt-5.6-sol": { "name": "ChatGPT GPT-5.6 Sol", "limit": { "context": 1100000, "output": 128000 } },
+        "chatgpt/gpt-5.6-terra": { "name": "ChatGPT GPT-5.6 Terra", "limit": { "context": 1050000, "output": 128000 } },
+        "chatgpt/gpt-5.6-luna": { "name": "ChatGPT GPT-5.6 Luna", "limit": { "context": 1050000, "output": 128000 } },
         "chatgpt/gpt-5.5": { "name": "ChatGPT GPT-5.5", "limit": { "context": 400000, "output": 128000 } },
         "chatgpt/gpt-5.4": { "name": "ChatGPT GPT-5.4", "limit": { "context": 400000, "output": 128000 } },
         "chatgpt/gpt-5.4-mini": { "name": "ChatGPT GPT-5.4 Mini", "limit": { "context": 400000, "output": 128000 } }

@@ -1,9 +1,8 @@
         "self-hosted": { "name": "Ornith 1.0 35B", "limit": { "context": 262144, "output": 16384 } },
         "vision": { "name": "Vision", "limit": { "context": 262144, "output": 16384 } },
         "nvidia": { "name": "Qwen3.6-27B", "limit": { "context": 131072, "output": 16384 } },
-        "kimi-k2.6": { "name": "Kimi K2.6", "limit": { "context": 262144, "output": 16384 } },
-        "kimi-k2.7": { "name": "Kimi K2.7 Code", "limit": { "context": 262144, "output": 16384 } },
-        "kimi-k3": { "name": "Kimi K3", "limit": { "context": 1000000, "output": 131072 } },
+        "kimi-k2.7": { "name": "Kimi K2.7 Code", "limit": { "context": 262144, "output": 32768 } },
+        "kimi-k3": { "name": "Kimi K3", "limit": { "context": 1048576, "output": 131072 } },
         "glm-5.1": { "name": "GLM 5.1", "limit": { "context": 203000, "output": 16384 } },
         "dsv4f": { "name": "DeepSeek V4 Flash", "limit": { "context": 1000000, "output": 16384 } },
         "dsv4p": { "name": "DeepSeek V4 Pro", "limit": { "context": 1000000, "output": 16384 } },
@@ -14,7 +13,7 @@
         "mimo-v2.5": { "name": "MiMo V2.5", "limit": { "context": 262144, "output": 16384 } },
         "qwen3.7-plus": { "name": "Qwen3.7 Plus", "limit": { "context": 1000000, "output": 16384 } },
         "glm-5.2": { "name": "GLM 5.2", "limit": { "context": 1000000, "output": 16384 } },
-        {{/* reasoning-pool: load-balanced. frontier-pool: priority failover sol->glm-5.2->kimi-k2.7->MiniMax-M3-chat floor. auto: complexity router. */}}
+        {{/* reasoning-pool: load-balanced. frontier-pool: priority failover sol->glm-5.2->kimi-k3->MiniMax-M3-chat floor. auto: complexity router. */}}
         "reasoning-pool": { "name": "Reasoning Pool", "limit": { "context": 262144, "output": 16384 } },
         "frontier-pool": { "name": "Frontier Pool", "limit": { "context": 1000000, "output": 16384 } },
         "auto": { "name": "Auto (router)", "limit": { "context": 131072, "output": 16384 } }

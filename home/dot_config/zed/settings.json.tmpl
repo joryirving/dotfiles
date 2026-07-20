@@ -86,6 +86,24 @@
         "available_models": [
 {{ template "shared/litellm-zed-models" . }},
           {
+            "name": "chatgpt/gpt-5.6-sol",
+            "max_tokens": 1100000,
+            "max_output_tokens": 128000,
+            "capabilities": { "tools": true, "images": true, "parallel_tool_calls": true, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
+          },
+          {
+            "name": "chatgpt/gpt-5.6-terra",
+            "max_tokens": 1050000,
+            "max_output_tokens": 128000,
+            "capabilities": { "tools": true, "images": true, "parallel_tool_calls": true, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
+          },
+          {
+            "name": "chatgpt/gpt-5.6-luna",
+            "max_tokens": 1050000,
+            "max_output_tokens": 128000,
+            "capabilities": { "tools": true, "images": true, "parallel_tool_calls": true, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
+          },
+          {
             "name": "chatgpt/gpt-5.5",
             "max_tokens": 400000,
             "max_output_tokens": 128000,
@@ -126,6 +144,7 @@
     "sidebar_side": "right",
     "dock": "right",
     "favorite_models": [
+      { "provider": "LiteLLM", "model": "frontier-pool", "enable_thinking": false },
       { "provider": "LiteLLM", "model": "reasoning-pool", "enable_thinking": false },
       { "provider": "LiteLLM", "model": "self-hosted", "enable_thinking": false },
       { "provider": "anthropic", "model": "MiniMax-M3", "enable_thinking": false },
