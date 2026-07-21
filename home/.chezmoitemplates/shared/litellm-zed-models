@@ -61,7 +61,7 @@
           {
             "name": "mimo-v2.5",
             "max_tokens": 262144,
-            "max_output_tokens": 16384,
+            "max_output_tokens": 16384,m
             "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
           },
           {
