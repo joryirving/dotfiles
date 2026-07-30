@@ -1,0 +1,18 @@
+# Local agent / editor state
+/.claude/
+/.opencode/
+.vscode/
+.idea/
+*.swp
+
+# OS noise
+.DS_Store
+._*
+Thumbs.db
+
+# Secrets & chezmoi decryption artifacts
+.decrypted~*
+*.age
+*.pem
+.env
+.env.local
