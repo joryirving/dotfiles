@@ -89,6 +89,21 @@
       "command": ["/opt/homebrew/lib/node_modules/@strowk/mcp-k8s-darwin-arm64/bin/mcp-k8s-go"],
       "enabled": true
     }
+    , "unifi-network": {
+      "type": "local",
+      "command": ["uvx", "--python-preference", "system", "unifi-network-mcp@latest"],
+      "enabled": true,
+      "environment": {
+        "UNIFI_NETWORK_HOST": "unifi.internal",
+        "UNIFI_NETWORK_USERNAME": "{{ onepasswordRead "op://Kubernetes/unifi/UNPOLLER_UNIFI_USER" }}",
+        "UNIFI_NETWORK_PASSWORD": "{{ onepasswordRead "op://Kubernetes/unifi/UNPOLLER_UNIFI_PASS" }}",
+        "UNIFI_TOOL_REGISTRATION_MODE": "meta_only",
+        "UNIFI_POLICY_CREATE": "false",
+        "UNIFI_POLICY_UPDATE": "false",
+        "UNIFI_POLICY_DELETE": "false",
+        "UNIFI_TOOL_PERMISSION_MODE": "confirm"
+      }
+    }
     {{- end }}
   }
   , "agent": {
