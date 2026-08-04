@@ -14,26 +14,15 @@ commits. **Review the upstream delta, not just the one-line local change.**
 
 ## Mandatory upstream scan
 
-When the diff changes any of:
+When the diff changes an npm plugin version (`@scope/name@<version>`), you
+MUST review its upstream release notes or CHANGELOG:
 
-- a git pin: `superpowers@git+https://github.com/obra/superpowers.git#<sha>`
-- an npm plugin version: `@scope/name@<version>`
+- Fetch the package's release notes or CHANGELOG via `web_fetch` if available;
+  otherwise note that the transitive code is not reviewable from this PR and say
+  so explicitly.
 
-you MUST use the `gh_api` tool to fetch the upstream context and review it:
-
-- For a **git pin** (sha change `old…new`): call
-  `GET /repos/obra/superpowers/compare/{old}...{new}` and review the commit list
-  and the diff of files that are code (`.js/.mjs/.cjs/.sh/.py/.ps1`), not docs
-  or tests in isolation. If the commit range is large, prioritize files under
-  `skills/`, `scripts/`, plugin entry points (`.opencode/plugins/*`,
-  `.pi/extensions/*`), and any new executable.
-- For an **npm version bump**: fetch the package's release notes or CHANGELOG via
-  `web_fetch` if available; otherwise note that the transitive code is not
-  reviewable from this PR and say so explicitly.
-
-State the upstream range you scanned and how many commits it spanned in the
-review body (e.g. "Scanned upstream f2cbfbe…d884ae0, 188 commits"). If you did
-not scan upstream because the change did not touch a pin, say so.
+State the package and version reviewed in the review body. If no plugin version
+changed, say that no upstream package review was needed.
 
 ## Upstream red flags → report as blocker findings
 
