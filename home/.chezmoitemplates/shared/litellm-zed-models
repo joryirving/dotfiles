@@ -6,7 +6,7 @@
           },
           {
             "name": "nvidia",
-            "max_tokens": 135000,
+            "max_tokens": 145000,
             "max_output_tokens": 16384,
             "capabilities": { "tools": true, "images": false, "parallel_tool_calls": true, "prompt_cache_key": false, "chat_completions": true, "interleaved_reasoning": false }
           },
