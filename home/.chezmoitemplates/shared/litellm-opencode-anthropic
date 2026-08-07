@@ -4,10 +4,11 @@
       "options": {
         "baseURL": "https://litellm.jory.dev/v1",
         "authToken": "{{ onepasswordRead "op://Kubernetes/litellm/LITELLM_OPENCODE_API_KEY" }}",
-        "timeout": 300000
+        "timeout": 1800000
       },
       "models": {
         "MiniMax-M2.7": { "name": "MiniMax M2.7" },
-        "MiniMax-M3": { "name": "MiniMax M3" }
+        "MiniMax-M3": { "name": "MiniMax M3" },
+        "auto": { "name": "Auto (router)", "limit": { "context": 131072, "output": 16384 } }
       }
     }
