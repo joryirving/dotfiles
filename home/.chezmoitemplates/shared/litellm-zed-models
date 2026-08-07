@@ -2,17 +2,11 @@
             "name": "self-hosted",
             "max_tokens": 262144,
             "max_output_tokens": 16384,
-            "capabilities": { "tools": true, "images": false, "parallel_tool_calls": true, "prompt_cache_key": false, "chat_completions": true, "interleaved_reasoning": false }
-          },
-          {
-            "name": "vision",
-            "max_tokens": 262144,
-            "max_output_tokens": 16384,
             "capabilities": { "tools": true, "images": true, "parallel_tool_calls": true, "prompt_cache_key": false, "chat_completions": true, "interleaved_reasoning": false }
           },
           {
             "name": "nvidia",
-            "max_tokens": 131072,
+            "max_tokens": 135000,
             "max_output_tokens": 16384,
             "capabilities": { "tools": true, "images": false, "parallel_tool_calls": true, "prompt_cache_key": false, "chat_completions": true, "interleaved_reasoning": false }
           },
@@ -27,12 +21,6 @@
             "max_tokens": 1048576,
             "max_output_tokens": 131072,
             "capabilities": { "tools": true, "images": true, "parallel_tool_calls": false, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
-          },
-          {
-            "name": "glm-5.1",
-            "max_tokens": 203000,
-            "max_output_tokens": 16384,
-            "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
           },
           {
             "name": "dsv4f",
