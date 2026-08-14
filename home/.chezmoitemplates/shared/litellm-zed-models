@@ -79,7 +79,7 @@
           },
           {
             "name": "auto",
-            "max_tokens": 131072,
+            "max_tokens": 125000,
             "max_output_tokens": 16384,
             "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": false, "chat_completions": true, "interleaved_reasoning": false }
           }

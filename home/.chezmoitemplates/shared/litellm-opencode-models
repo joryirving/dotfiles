@@ -1,5 +1,5 @@
         "self-hosted": { "name": "Qwen3.6 35B-A3B", "limit": { "context": 262144, "output": 16384 } },
-        "nvidia": { "name": "Qwen3.6-27B", "limit": { "context": 145000, "output": 16384 } },
+        "nvidia": { "name": "Qwen3.6-27B", "limit": { "context": 125000, "output": 16384 } },
         "kimi-k2.7": { "name": "Kimi K2.7 Code", "limit": { "context": 262144, "output": 32768 } },
         "kimi-k3": { "name": "Kimi K3", "limit": { "context": 1048576, "output": 131072 } },
         "dsv4f": { "name": "DeepSeek V4 Flash", "limit": { "context": 1000000, "output": 16384 } },
@@ -12,4 +12,4 @@
         {{/* reasoning-pool: load-balanced. frontier-pool: priority failover sol->glm-5.2->kimi-k3->MiniMax-M3-chat floor. auto: complexity router. */}}
         "reasoning-pool": { "name": "Reasoning Pool", "limit": { "context": 262144, "output": 16384 } },
         "frontier-pool": { "name": "Frontier Pool", "limit": { "context": 1000000, "output": 16384 } },
-        "auto": { "name": "Auto (router)", "limit": { "context": 131072, "output": 16384 } }
+        "auto": { "name": "Auto (router)", "limit": { "context": 125000, "output": 16384 } }
