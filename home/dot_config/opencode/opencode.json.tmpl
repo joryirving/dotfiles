@@ -106,15 +106,19 @@
          Routing bias: explorer/fixer-bigctx/oracle (dsv4f / qwen3.7-plus / dsv4p) all
          sit on the Opencode Go sub — flat monthly, marginal cost ~0, and badly underused
          since the other models moved off it. So the coordinator prompt pushes work there
-         by default. `nvidia` stays the low-latency lane for small edits; `self-hosted` is
-         demoted to `fixer-local` backfill because that box is perpetually pinned.
+         by default. `nvidia` stays the low-latency lane for small edits and carries
+         vision: it serves Qwen3.8-27B at 140k with the projector encoding on CPU.
+         The Strix lanes are selectable rather than auto-routed — `self-hosted` is the
+         Qwen3.6-35B-A3B heretic build (262k, vision), `nemotron` is the Foreman
+         reviewer's model, and `vision` is the abliterated Qwen3.5-9B on an Intel iGPU
+         for image work that must not refuse.
          Coordinator itself stays on reasoning-pool so the planner is a different family
          than `oracle` — otherwise the second opinion is worthless. */}}
     "coordinator": {
-      "description": "Reasoning coordinator — plans, then delegates to role subagents (explorer/fixer/fixer-bigctx/oracle/reviewer/fixer-local)",
+      "description": "Reasoning coordinator — plans, then delegates to role subagents (explorer/fixer/fixer-bigctx/oracle/reviewer)",
       "mode": "primary",
       "model": "litellm/reasoning-pool",
-      "prompt": "You are a coordinator. Do the high-level reasoning and synthesis yourself; delegate the legwork to role subagents via the task tool.\n\nCONTRACTS: when you delegate, hand each sub a self-contained brief — objective, the decisions already settled (inline the exact values), the files it owns, what's out of scope, and the observable check that proves success. A sub should never have to infer scope or re-derive a decision you already made.\n\nCAPACITY POLICY: `explorer`, `fixer-bigctx`, and `oracle` all resolve to a flat-rate subscription — their marginal token cost is effectively zero and the plan is currently underused. Use them freely and in parallel. Do not hoard them, ration them, or do work yourself to avoid spending them. `fixer` (nvidia) is the low-latency lane for small scoped edits. `fixer-local` (self-hosted) is perpetually saturated — backfill of last resort, only when every other lane is busy or unsuitable.\n\nROLES:\n- `explorer` (dsv4f — 1M ctx, prepaid): default recon. Codebase search, 'where/how is X', parallel scouting. Read-only. Fan out several at once; this is the cheapest way to buy context.\n- `oracle` (dsv4p — 1M ctx, prepaid, strongest analysis tier): hard debugging, root-cause, architecture. Read-mostly; return analysis, don't sprawl into edits.\n- `fixer-bigctx` (qwen3.7-plus — 1M ctx, prepaid): primary bulk coding lane. Large context, independent implementation attempts, alternative fixes, extra parallel coding capacity.\n- `fixer` (nvidia — Qwen3.6-27B, 131k, no vision): fast local coder. Prefer it for small, well-bounded edits where latency matters.\n- `reviewer` (MiniMax M3): independent second opinion and creative/prose.\n- `fixer-local` (self-hosted — Qwen3.6 35B-A3B MoE, 262k, 2 slots, multimodal): local backfill once the prepaid lanes and `fixer` are exhausted, and the only image-capable lane. Expect queueing; it is usually pinned.\n\nPARALLEL CODING: default to `fixer-bigctx` for substantive implementation and run several instances concurrently rather than narrowing scope. Use `fixer` alongside it for the small fast edits. Spill to `fixer-local` only after the prepaid lanes and `fixer` are saturated — but route anything involving images there regardless, since it is the only lane that can read them.\n\nCOUNCIL (high-stakes review): get independent verdicts from different model families — `oracle` (DeepSeek), `reviewer` (MiniMax), and `fixer`/`fixer-bigctx` (Qwen) — then reconcile. Never let one model grade its own work."
+      "prompt": "You are a coordinator. Do the high-level reasoning and synthesis yourself; delegate the legwork to role subagents via the task tool.\n\nCONTRACTS: when you delegate, hand each sub a self-contained brief — objective, the decisions already settled (inline the exact values), the files it owns, what's out of scope, and the observable check that proves success. A sub should never have to infer scope or re-derive a decision you already made.\n\nCAPACITY POLICY: `explorer`, `fixer-bigctx`, and `oracle` all resolve to a flat-rate subscription — their marginal token cost is effectively zero and the plan is currently underused. Use them freely and in parallel. Do not hoard them, ration them, or do work yourself to avoid spending them. `fixer` (nvidia) is the low-latency lane for small scoped edits, and is also the only lane that can read images. `fixer` is also the only lane that can read images.\n\nROLES:\n- `explorer` (dsv4f — 1M ctx, prepaid): default recon. Codebase search, 'where/how is X', parallel scouting. Read-only. Fan out several at once; this is the cheapest way to buy context.\n- `oracle` (dsv4p — 1M ctx, prepaid, strongest analysis tier): hard debugging, root-cause, architecture. Read-mostly; return analysis, don't sprawl into edits.\n- `fixer-bigctx` (qwen3.7-plus — 1M ctx, prepaid): primary bulk coding lane. Large context, independent implementation attempts, alternative fixes, extra parallel coding capacity.\n- `fixer` (nvidia — Qwen3.8-27B, 140k, multimodal): fast local coder and the only image-capable lane. Prefer it for small, well-bounded edits where latency matters, and route anything involving images here.\n- `reviewer` (MiniMax M3): independent second opinion and creative/prose.\n\nPARALLEL CODING: default to `fixer-bigctx` for substantive implementation and run several instances concurrently rather than narrowing scope. Use `fixer` alongside it for the small fast edits. Route anything involving images to `fixer`, the only lane that can read them.\n\nCOUNCIL (high-stakes review): get independent verdicts from different model families — `oracle` (DeepSeek), `reviewer` (MiniMax), and `fixer`/`fixer-bigctx` (Qwen) — then reconcile. Never let one model grade its own work."
     },
     "explorer": {
       "description": "Default recon — codebase scouting, search, 'where/how is X', read-only. DeepSeek V4 Flash (1M ctx, prepaid): fan out freely, several at a time.",
@@ -122,7 +126,7 @@
       "model": "litellm/dsv4f"
     },
     "fixer": {
-      "description": "Fast scoped edits — Qwen3.6-27B local (131k, no vision). Low latency; prefer it for small, well-bounded changes.",
+      "description": "Fast scoped edits — Qwen3.8-27B local on the 3090 (140k, multimodal). Low latency; prefer it for small, well-bounded changes, and for anything involving images.",
       "mode": "subagent",
       "model": "litellm/nvidia"
     },
@@ -140,11 +144,6 @@
       "description": "Independent review / creative — MiniMax M3 (distinct family from the Qwen coders and the DeepSeek analysis lanes). Second opinions and prose.",
       "mode": "subagent",
       "model": "litellm-anthropic/MiniMax-M3"
-    },
-    "fixer-local": {
-      "description": "Local backfill and the only image-capable lane — Qwen3.6 35B-A3B MoE (262k, multimodal, 2 slots). Use once the prepaid lanes and `fixer` are exhausted, or whenever a task must read images; usually pinned, expect queueing.",
-      "mode": "subagent",
-      "model": "litellm/self-hosted"
     },
     "lean": {
       "description": "Minimal MCP context — toolhive router only (reaches other MCPs via call_tool)",

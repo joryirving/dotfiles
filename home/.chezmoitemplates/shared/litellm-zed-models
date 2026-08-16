@@ -1,14 +1,22 @@
           {
-            "name": "self-hosted",
-            "max_tokens": 262144,
+            "name": "nvidia",
+            "max_tokens": 131072,
             "max_output_tokens": 16384,
             "capabilities": { "tools": true, "images": true, "parallel_tool_calls": true, "prompt_cache_key": false, "chat_completions": true, "interleaved_reasoning": false }
           },
           {
-            "name": "nvidia",
-            "max_tokens": 145000,
-            "max_output_tokens": 16384,
-            "capabilities": { "tools": true, "images": false, "parallel_tool_calls": true, "prompt_cache_key": false, "chat_completions": true, "interleaved_reasoning": false }
+            "name": "self-hosted",
+            "display_name": "Qwen3.6-35B-A3B heretic (Strix)",
+            "max_tokens": 262144,
+            "max_output_tokens": 20480,
+            "max_completion_tokens": 20480
+          },
+          {
+            "name": "vision",
+            "display_name": "Qwen3.5-9B abliterated (Intel iGPU, vision)",
+            "max_tokens": 32768,
+            "max_output_tokens": 8192,
+            "max_completion_tokens": 8192
           },
           {
             "name": "kimi-k2.7",
@@ -59,15 +67,15 @@
             "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
           },
           {
-            "name": "glm-5.2",
+            "name": "glm-5.3",
             "max_tokens": 1000000,
-            "max_output_tokens": 16384,
+            "max_output_tokens": 131072,
             "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
           },
-          // reasoning-pool: load-balanced. frontier-pool: priority failover sol -> glm-5.2 -> kimi-k3 -> MiniMax-M3-chat. auto: complexity router.
+          // reasoning-pool: load-balanced. frontier-pool: priority failover sol -> glm-5.3 -> kimi-k3 -> MiniMax-M3-chat. auto: complexity router.
           {
             "name": "reasoning-pool",
-            "max_tokens": 262144,
+            "max_tokens": 1050000,
             "max_output_tokens": 16384,
             "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
           },
