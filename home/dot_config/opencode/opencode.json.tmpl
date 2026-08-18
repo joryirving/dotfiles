@@ -103,10 +103,14 @@
          Strong reasoning coordinator plans and delegates via the task tool;
          everyday default stays `auto`. Tab to coordinator for orchestration.
 
-         Routing bias: explorer/fixer-bigctx/oracle (dsv4f / qwen3.7-plus / dsv4p) all
-         sit on the Opencode Go sub — flat monthly, marginal cost ~0, and badly underused
-         since the other models moved off it. So the coordinator prompt pushes work there
-         by default. `nvidia` stays the low-latency lane for small edits and carries
+         Routing bias: explorer/fixer-bigctx/oracle (mimo-v2.5 / dsv4f / dsv4p)
+         sit on the Opencode Go sub. That plan is dollar-denominated, NOT flat — $60/mo,
+         $30/wk, $12 per rolling 5h — so per-token price decides which lane is cheap.
+         dsv4f was repriced ~8x (2026-08-16) to $0.22/$0.66 AND given its own $15/mo
+         sub-cap inside the $60, so it is no longer the fan-out lane; explorer moved to
+         mimo-v2.5 ($0.14/$0.28), which is the cheapest Go model and the best fit for
+         recon, the role that needs the least intelligence. dsv4f was also never fast:
+         117s p95 against nvidia's 54s. `nvidia` stays the low-latency lane for small edits and carries
          vision: it serves Qwen3.8-27B at 140k with the projector encoding on CPU.
          The Strix lanes are selectable rather than auto-routed — `self-hosted` is the
          Qwen3.6-35B-A3B heretic build (262k, vision), `nemotron` is the Foreman
@@ -118,12 +122,12 @@
       "description": "Reasoning coordinator — plans, then delegates to role subagents (explorer/fixer/fixer-bigctx/oracle/reviewer)",
       "mode": "primary",
       "model": "litellm/reasoning-pool",
-      "prompt": "You are a coordinator. Do the high-level reasoning and synthesis yourself; delegate the legwork to role subagents via the task tool.\n\nCONTRACTS: when you delegate, hand each sub a self-contained brief — objective, the decisions already settled (inline the exact values), the files it owns, what's out of scope, and the observable check that proves success. A sub should never have to infer scope or re-derive a decision you already made.\n\nCAPACITY POLICY: `explorer`, `fixer-bigctx`, and `oracle` all resolve to a flat-rate subscription — their marginal token cost is effectively zero and the plan is currently underused. Use them freely and in parallel. Do not hoard them, ration them, or do work yourself to avoid spending them. `fixer` (nvidia) is the low-latency lane for small scoped edits, and is also the only lane that can read images. `fixer` is also the only lane that can read images.\n\nROLES:\n- `explorer` (dsv4f — 1M ctx, prepaid): default recon. Codebase search, 'where/how is X', parallel scouting. Read-only. Fan out several at once; this is the cheapest way to buy context.\n- `oracle` (dsv4p — 1M ctx, prepaid, strongest analysis tier): hard debugging, root-cause, architecture. Read-mostly; return analysis, don't sprawl into edits.\n- `fixer-bigctx` (qwen3.7-plus — 1M ctx, prepaid): primary bulk coding lane. Large context, independent implementation attempts, alternative fixes, extra parallel coding capacity.\n- `fixer` (nvidia — Qwen3.8-27B, 140k, multimodal): fast local coder and the only image-capable lane. Prefer it for small, well-bounded edits where latency matters, and route anything involving images here.\n- `reviewer` (MiniMax M3): independent second opinion and creative/prose.\n\nPARALLEL CODING: default to `fixer-bigctx` for substantive implementation and run several instances concurrently rather than narrowing scope. Use `fixer` alongside it for the small fast edits. Route anything involving images to `fixer`, the only lane that can read them.\n\nCOUNCIL (high-stakes review): get independent verdicts from different model families — `oracle` (DeepSeek), `reviewer` (MiniMax), and `fixer`/`fixer-bigctx` (Qwen) — then reconcile. Never let one model grade its own work."
+      "prompt": "You are a coordinator. Do the high-level reasoning and synthesis yourself; delegate the legwork to role subagents via the task tool.\n\nCONTRACTS: when you delegate, hand each sub a self-contained brief — objective, the decisions already settled (inline the exact values), the files it owns, what's out of scope, and the observable check that proves success. A sub should never have to infer scope or re-derive a decision you already made.\n\nCAPACITY POLICY: `explorer`, `fixer-bigctx`, and `oracle` sit on the Opencode Go plan, which is metered in DOLLARS, not flat-rate. Their cost is real and they are not interchangeable: `explorer` (mimo-v2.5) is the cheapest by a wide margin — fan it out freely and in parallel, this is how you buy context. `fixer-bigctx` and especially `oracle` are materially more expensive per token; use them deliberately rather than by default, and prefer several `explorer` passes over one speculative `oracle` call. `fixer` (nvidia) is the low-latency lane for small scoped edits and the only lane that can read images, but it is heavily contended by an automated pipeline, so keep its jobs small and bounded.\n\nROLES:\n- `explorer` (mimo-v2.5 — 256k ctx): default recon. Codebase search, 'where/how is X', parallel scouting. Read-only. Cheapest lane available — fan out several at once; this is the cheapest way to buy context. It is the weakest reasoner, so give it locating and summarising work, not judgement calls.\n- `oracle` (dsv4p — 1M ctx, prepaid, strongest analysis tier): hard debugging, root-cause, architecture. Read-mostly; return analysis, don't sprawl into edits.\n- `fixer-bigctx` (dsv4f — 1M ctx): primary bulk coding lane. Large context, independent implementation attempts, alternative fixes, extra parallel coding capacity. Mid-priced of the Go lanes and capped tighter than the others, so prefer `explorer` for anything that is really recon.\n- `fixer` (nvidia — Qwen3.8-27B, 140k, multimodal): fast local coder and the only image-capable lane. Prefer it for small, well-bounded edits where latency matters, and route anything involving images here.\n- `reviewer` (MiniMax M3): independent second opinion and creative/prose.\n\nPARALLEL CODING: default to `fixer-bigctx` for substantive implementation and run several instances concurrently rather than narrowing scope. Use `fixer` alongside it for the small fast edits. Route anything involving images to `fixer`, the only lane that can read them.\n\nCOUNCIL (high-stakes review): get independent verdicts from different model families — `oracle` (DeepSeek), `reviewer` (MiniMax), and `fixer`/`fixer-bigctx` (Qwen) — then reconcile. Never let one model grade its own work."
     },
     "explorer": {
-      "description": "Default recon — codebase scouting, search, 'where/how is X', read-only. DeepSeek V4 Flash (1M ctx, prepaid): fan out freely, several at a time.",
+      "description": "Default recon — codebase scouting, search, 'where/how is X', read-only. MiMo V2.5 (256k ctx), the cheapest Go lane: fan out freely, several at a time. Weakest reasoner — locating and summarising, not judgement.",
       "mode": "subagent",
-      "model": "litellm/dsv4f"
+      "model": "litellm/mimo-v2.5"
     },
     "fixer": {
       "description": "Fast scoped edits — Qwen3.8-27B local on the 3090 (140k, multimodal). Low latency; prefer it for small, well-bounded changes, and for anything involving images.",
@@ -131,9 +135,9 @@
       "model": "litellm/nvidia"
     },
     "fixer-bigctx": {
-      "description": "Primary bulk coding lane — Qwen3.7 Plus (1M ctx, prepaid). Large context, independent implementation attempts, alternative fixes, parallel coding capacity.",
+      "description": "Primary bulk coding lane — DeepSeek V4 Flash (1M ctx). Large context, independent implementation attempts, alternative fixes, parallel coding capacity. Falls back to GPT-5.6 Luna when its cap is spent.",
       "mode": "subagent",
-      "model": "litellm/qwen3.7-plus"
+      "model": "litellm/dsv4f"
     },
     "oracle": {
       "description": "Hard debugging / architecture — DeepSeek V4 Pro (1M ctx, prepaid, strongest analysis tier). Read-mostly deep analysis; return a recommendation, don't sprawl into edits",

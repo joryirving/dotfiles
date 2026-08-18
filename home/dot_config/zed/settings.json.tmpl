@@ -115,7 +115,9 @@
       "enable_thinking": false,
     },
     // Zed has ONE global subagent model (no per-task choice like opencode), so it
-    // can't do the "rush → dsv4f" escape — keep subagents local-first on nvidia.
+    // can't fan out to a cheap Go lane the way opencode's `explorer` does. Kept on
+    // nvidia: it is the fastest local lane (54s p95 vs 92-118s for the Strix lanes),
+    // though it is heavily contended by Foreman, so keep Zed subagent jobs bounded.
     "subagent_model": {
       "provider": "LiteLLM",
       "model": "nvidia",
@@ -130,6 +132,8 @@
       { "provider": "LiteLLM", "model": "reasoning-pool", "enable_thinking": false },
       { "provider": "LiteLLM", "model": "self-hosted", "enable_thinking": false },
       { "provider": "anthropic", "model": "MiniMax-M3", "enable_thinking": false },
+      { "provider": "LiteLLM", "model": "mimo-v2.5", "enable_thinking": false },
+      { "provider": "LiteLLM", "model": "go-gpt-5.6-luna", "enable_thinking": false },
       { "provider": "LiteLLM", "model": "dsv4f", "enable_thinking": false },
       { "provider": "LiteLLM", "model": "dsv4p", "enable_thinking": false },
       { "provider": "LiteLLM", "model": "glm-5.3", "enable_thinking": false },
