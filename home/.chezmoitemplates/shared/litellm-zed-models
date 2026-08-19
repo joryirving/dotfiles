@@ -1,18 +1,18 @@
           {
-            "name": "nvidia",
+            "name": "llama-nvidia",
             "max_tokens": 131072,
             "max_output_tokens": 16384,
             "capabilities": { "tools": true, "images": true, "parallel_tool_calls": true, "prompt_cache_key": false, "chat_completions": true, "interleaved_reasoning": false }
           },
           {
-            "name": "self-hosted",
+            "name": "llama-strix",
             "display_name": "Qwen3.6-35B-A3B heretic (Strix)",
             "max_tokens": 262144,
             "max_output_tokens": 20480,
             "max_completion_tokens": 20480
           },
           {
-            "name": "vision",
+            "name": "llama-vision",
             "display_name": "Qwen3.5-9B abliterated (Intel iGPU, vision)",
             "max_tokens": 32768,
             "max_output_tokens": 8192,

@@ -120,7 +120,7 @@
     // though it is heavily contended by Foreman, so keep Zed subagent jobs bounded.
     "subagent_model": {
       "provider": "LiteLLM",
-      "model": "nvidia",
+      "model": "llama-nvidia",
       "enable_thinking": false,
     },
     // Commit-message path (Zed routes this around the agent panel; AGENTS.md covers the rest).
@@ -130,7 +130,7 @@
     "favorite_models": [
       { "provider": "LiteLLM", "model": "frontier-pool", "enable_thinking": false },
       { "provider": "LiteLLM", "model": "reasoning-pool", "enable_thinking": false },
-      { "provider": "LiteLLM", "model": "self-hosted", "enable_thinking": false },
+      { "provider": "LiteLLM", "model": "llama-strix", "enable_thinking": false },
       { "provider": "anthropic", "model": "MiniMax-M3", "enable_thinking": false },
       { "provider": "LiteLLM", "model": "mimo-v2.5", "enable_thinking": false },
       { "provider": "LiteLLM", "model": "go-gpt-5.6-luna", "enable_thinking": false },
