@@ -67,9 +67,12 @@ to inspect the change first. `home/.chezmoiignore` excludes `~/.pi/agent/auth.js
 those machine-local runtime files.
 
 The ToolHive endpoint is shared with the managed OpenCode and Zed configurations. A safe
-unauthenticated GET to `https://mcp.jory.dev/mcp` returned HTTP 401 during validation, so Pi
-retains its `x-api-key` sourced from 1Password; the secret is not stored in this repository.
-OpenCode and Zed reference the same URL without a visible header in their managed templates.
+unauthenticated GET to `https://mcp.jory.dev/mcp` returned HTTP 401 during validation, so
+all three clients use the same 1Password-backed `x-api-key`; the secret is not stored in
+this repository. OpenCode 1.18.18 reported `toolhive` as needing authentication, and Zed's
+active log reported that it required OAuth, before their headers were added. OpenCode's
+remote-server schema and Zed's `context_servers` schema both accept a `headers` map; Zed
+uses those values verbatim, so Chezmoi renders the key rather than relying on env expansion.
 Pi's template uses `lifecycle: lazy`, matching the installed `pi-mcp-adapter` 2.27.0 schema
 (`keep-alive`, `lazy`, `lazy-keep-alive`, or `eager`); the redacted rendered config loaded
 successfully through Pi 0.84.2 and that adapter.

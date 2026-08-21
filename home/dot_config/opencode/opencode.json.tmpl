@@ -49,7 +49,10 @@
     },
     "toolhive": {
       "type": "remote",
-      "url": "https://mcp.jory.dev/mcp"
+      "url": "https://mcp.jory.dev/mcp",
+      "headers": {
+        "x-api-key": "{{ onepasswordRead "op://Kubernetes/toolhive/TOOLHIVE_MACBOOK_API_KEY" }}"
+      }
     },
     "konflate": {
       "type": "remote",
