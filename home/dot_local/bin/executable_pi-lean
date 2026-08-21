@@ -1,0 +1,2 @@
+#!/usr/bin/env sh
+exec pi --no-context-files --append-system-prompt "$HOME/.pi/agent/prompts/coordinator-system.md" "$@"

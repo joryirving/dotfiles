@@ -1,0 +1,35 @@
+{
+  "name": "review-pr",
+  "description": "Resolve a PR target, fan out read-only lanes, and save a compact review artifact.",
+  "stages": [
+    {
+      "id": "resolve",
+      "type": "delegate",
+      "agent": "explorer",
+      "task": "Resolve the pull request target from the current repository and the user's hint: {input}. Report the exact base/head, changed files, and any ambiguity. Read-only.",
+      "handoff": true
+    },
+    {
+      "id": "fanout",
+      "type": "delegate",
+      "mode": "parallel",
+      "parallelLimit": 3,
+      "handoffFrom": ["resolve"],
+      "tasks": [
+        {"agent": "explorer", "task": "Inspect the resolved PR for concrete correctness and regression evidence. Context:\n{handoff}"},
+        {"agent": "oracle", "task": "Analyze the resolved PR deeply for architecture, edge cases, and unknowns. Context:\n{handoff}"},
+        {"agent": "reviewer", "task": "Perform an independent read-only review of the resolved PR. Return only actionable findings with evidence. Context:\n{handoff}"}
+      ],
+      "handoff": true
+    },
+    {
+      "id": "synthesize",
+      "type": "delegate",
+      "agent": "reviewer",
+      "handoffFrom": ["resolve", "fanout"],
+      "task": "Synthesize the PR review. Keep findings actionable and evidence-backed, distinguish unknowns, and state whether review is clean.\n{handoff}",
+      "handoff": true,
+      "artifact": "review.md"
+    }
+  ]
+}

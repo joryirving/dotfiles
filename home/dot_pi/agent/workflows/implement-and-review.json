@@ -1,0 +1,78 @@
+{
+  "name": "implement-and-review",
+  "description": "Plan, approve, implement, check, review, and allow one bounded repair pass.",
+  "stages": [
+    {
+      "id": "plan",
+      "type": "delegate",
+      "agent": "oracle",
+      "task": "Make a concrete, read-only implementation plan for this request: {input}. Name files, risks, and the cheapest checks.",
+      "handoff": true
+    },
+    {
+      "id": "approve-mutation",
+      "type": "approval",
+      "for": ["implement", "repair-fix"],
+      "handoffFrom": ["plan"],
+      "message": "The next stages may edit the working tree. Review the plan and approve mutation only if the scope is correct:\n{handoff}"
+    },
+    {
+      "id": "implement",
+      "type": "delegate",
+      "agent": "fixer",
+      "mutation": true,
+      "handoffFrom": ["plan"],
+      "task": "Implement the approved request. Keep the change scoped, preserve unrelated edits, and report validation evidence. Request:\n{input}\nPlan:\n{handoff}",
+      "handoff": true
+    },
+    {
+      "id": "check",
+      "type": "check",
+      "command": ["git", "diff", "--check"],
+      "label": "git diff --check",
+      "artifact": "check.txt",
+      "continueOnFailure": true
+    },
+    {
+      "id": "review",
+      "type": "delegate",
+      "agent": "reviewer",
+      "handoffFrom": ["plan", "implement"],
+      "task": "Review the implementation and current diff read-only. If concrete issues remain, start the response with ACTIONABLE FINDINGS; otherwise start with CLEAN. Look for correctness, regressions, security issues, and missing checks.\n{handoff}",
+      "handoff": true,
+      "failureIfContains": "ACTIONABLE FINDINGS",
+      "continueOnFailure": true
+    },
+    {
+      "id": "repair",
+      "type": "repair-loop",
+      "if": ["check", "review"],
+      "maxAttempts": 1,
+      "stages": [
+        {
+          "id": "repair-fix",
+          "type": "delegate",
+          "agent": "fixer",
+          "mutation": true,
+          "handoffFrom": ["check", "review"],
+          "task": "Repair only the concrete failures from the check/review handoff. Do not broaden scope.\n{handoff}",
+          "handoff": true
+        },
+        {
+          "id": "repair-check",
+          "type": "check",
+          "command": ["git", "diff", "--check"],
+          "artifact": "repair-check.txt"
+        },
+        {
+          "id": "repair-review",
+          "type": "delegate",
+          "agent": "reviewer",
+          "handoffFrom": ["repair-fix", "repair-check"],
+          "task": "Re-review the bounded repair read-only and report remaining actionable findings.\n{handoff}",
+          "artifact": "repair-review.md"
+        }
+      ]
+    }
+  ]
+}

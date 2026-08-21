@@ -5,3 +5,7 @@
 .config/zed/settings.json
 .config/zed/AGENTS.md
 {{- end }}
+
+# Pi machine-local auth and model cache; never manage or overwrite these.
+.pi/agent/auth.json
+.pi/agent/models-store.json

@@ -1,0 +1,25 @@
+{
+  "settings": {
+    "directTools": false,
+    "hostConfigDiscovery": "off",
+    "notifyOnStartupConnect": false
+  },
+  "mcpServers": {
+    "toolhive": {
+      "url": "https://mcp.jory.dev/mcp",
+      "transport": "http",
+      "headers": {
+        "x-api-key": "{{ onepasswordRead "op://Kubernetes/toolhive/TOOLHIVE_MACBOOK_API_KEY" }}"
+      },
+      "connectionMode": "lazy"
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"],
+      "env": {
+        "CONTEXT7_API_KEY": "{{ onepasswordRead "op://Kubernetes/context7/OPENCODE_API_KEY" }}"
+      },
+      "connectionMode": "lazy"
+    }
+  }
+}

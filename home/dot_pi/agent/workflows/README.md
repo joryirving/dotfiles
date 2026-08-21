@@ -1,0 +1,55 @@
+# Pi workflows
+
+This is an opt-in workflow layer for the local Pi setup. Definitions are discovered from
+`~/.pi/agent/workflows/*.json`; normal prompts do not enter a workflow.
+
+Commands:
+
+- `/workflow list`
+- `/workflow show NAME`
+- `/workflow start NAME [short task context]`
+- `/workflow status [RUN_ID]`
+- `/workflow pause RUN_ID`
+- `/workflow resume RUN_ID`
+- `/workflow quit RUN_ID`
+
+The same actions are available to the `workflow` tool. Keep tool calls narrow: use `list`,
+`show`, and `status` before starting a run.
+
+Definitions are portable and Chezmoi-managed in `~/.pi/agent/workflows/`. Run state is kept
+machine-local in `~/.agents/local/pi/workflows/runs/RUN_ID/state.json`; selected stage outputs
+are saved under that run's `artifacts/` directory. State writes use a same-directory
+temporary file, `fsync`, and rename so an interrupted write does not replace the last good
+state. Handoffs are explicit per stage and capped before they are passed to another stage;
+full outputs are only kept when a stage declares an artifact.
+
+Delegation uses the existing named user agents and subagent child launcher. Parallel stages
+are capped at four children. `mutation: true` stages require interactive approval, and an
+explicit `approval` stage can pre-approve named mutation stages. Checks use an argument-array
+command and run in the workflow's working directory. Repair loops must declare `maxAttempts`
+and are limited to three by the extension.
+
+To add a workflow, copy a compact JSON definition into this directory with a matching
+`name`, `description`, and `stages`. Supported stages are `delegate` (single or bounded
+parallel), `check`, `approval`, and `repair-loop`. Delegation task strings support
+`{input}`, `{handoff}`, and `{attempt}`. Set `handoffFrom` to name exactly which prior stage
+outputs enter a task. Set `artifact` only for outputs worth keeping. Changes to workflow
+definitions do not change the model catalog, MCP templates, or baseline context injection.
+The runner has no sandbox: use a disposable worktree or container for autonomous mutation.
+
+## Chezmoi ownership
+
+The repository's `.chezmoiroot` is `home`, so these source paths are the source of truth:
+
+- `home/dot_local/bin/executable_pi-child` -> `~/.local/bin/pi-child`
+- `home/dot_local/bin/executable_pi-lean` -> `~/.local/bin/pi-lean`
+- `home/dot_pi/agent/mcp.json.tmpl` -> `~/.pi/agent/mcp.json`
+- `home/dot_pi/agent/models.json.tmpl` -> `~/.pi/agent/models.json`
+- `home/dot_pi/agent/extensions`, `agents`, `prompts`, `workflows`, and `settings.json` -> matching `~/.pi/agent` paths
+
+`chezmoi apply` reconciles managed destinations from this source. If a destination was
+edited locally, default Chezmoi behavior prompts before overwriting it; `chezmoi apply
+--force` makes the source win without that prompt. Use `chezmoi apply --dry-run --verbose`
+to inspect the change first. `home/.chezmoiignore` excludes `~/.pi/agent/auth.json` and
+`~/.pi/agent/models-store.json`; `chezmoi ignored` reports both, so apply does not overwrite
+those machine-local runtime files.
