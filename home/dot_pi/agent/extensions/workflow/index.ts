@@ -23,13 +23,27 @@ import {
 	type SingleResult,
 } from "../subagent/index.ts";
 import { discoverAgents } from "../subagent/agents.ts";
+import {
+	assertWithin,
+	createPullRequest,
+	deliveryBranch,
+	ensureDeliveryWorktree,
+	observePullRequestChecks,
+	parseDeliveryInput,
+	readPullRequest,
+	runDeliveryPreflight as runDeliveryPreflightFacts,
+	runFixedCommand,
+	validateBranchName,
+	type DeliveryPreflight,
+	type PullRequestChecks,
+} from "./delivery.ts";
 
 const MAX_PARALLEL = 4;
 const HANDOFF_LIMIT = 6000;
 const OUTPUT_LIMIT = 24_000;
 const RUN_ID = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 
-type Status = "running" | "pausing" | "paused" | "waiting-approval" | "completed" | "failed" | "quit";
+type Status = "running" | "pausing" | "paused" | "waiting-approval" | "waiting-checks" | "completed" | "failed" | "blocked" | "quit";
 type StageResultStatus = "passed" | "failed" | "skipped";
 
 interface BaseStage {
@@ -40,6 +54,8 @@ interface BaseStage {
 	artifact?: string;
 	continueOnFailure?: boolean;
 	failureIfContains?: string;
+	review?: boolean;
+	terminal?: boolean;
 }
 
 interface DelegateStage extends BaseStage {
@@ -71,12 +87,38 @@ interface RepairLoopStage extends BaseStage {
 	stages: Stage[];
 }
 
-type Stage = DelegateStage | CheckStage | ApprovalStage | RepairLoopStage;
+interface DeliveryPreflightStage extends BaseStage {
+	type: "delivery-preflight";
+	openPr?: boolean;
+}
+
+interface DeliveryWorktreeStage extends BaseStage {
+	type: "delivery-worktree";
+}
+
+interface GithubPrCreateStage extends BaseStage {
+	type: "github-pr-create";
+	titlePrefix?: string;
+	body?: string;
+}
+
+interface GithubChecksStage extends BaseStage {
+	type: "github-pr-checks";
+}
+
+type Stage = DelegateStage | CheckStage | ApprovalStage | RepairLoopStage | DeliveryPreflightStage | DeliveryWorktreeStage | GithubPrCreateStage | GithubChecksStage;
+
+interface DeliveryLimits {
+	maxChildAgents: number;
+	maxRepairRounds: number;
+	maxCost?: number;
+}
 
 interface WorkflowDefinition {
 	name: string;
 	description: string;
 	maxRepairAttempts?: number;
+	delivery?: DeliveryLimits & { openPr?: boolean };
 	stages: Stage[];
 }
 
@@ -89,7 +131,7 @@ interface StoredStageResult {
 }
 
 interface RunState {
-	version: 1;
+	version: 2;
 	id: string;
 	workflow: string;
 	cwd: string;
@@ -104,6 +146,39 @@ interface RunState {
 	stageResults: Record<string, StoredStageResult>;
 	loopAttempts: Record<string, number>;
 	approvals: string[];
+	ticketId?: string;
+	taskId?: string;
+	baseRoot?: string;
+	baseBranch?: string;
+	baseSha?: string;
+	worktreePath?: string;
+	worktreeBranch?: string;
+	headSha?: string;
+	pr?: {
+		number: number;
+		url: string;
+		state: string;
+		baseBranch: string;
+		headBranch: string;
+		headSha: string;
+		checks?: PullRequestChecks;
+	};
+	checks?: PullRequestChecks;
+	reviewRounds: number;
+	repairCount: number;
+	lastBlockingFindings?: number;
+	nonDecreasingFindings?: boolean;
+	limits?: DeliveryLimits;
+	agentUsage: {
+		children: number;
+		input: number;
+		output: number;
+		cacheRead: number;
+		cacheWrite: number;
+		cost: number;
+		byAgent: Record<string, { children: number; cost: number }>;
+	};
+	events: Array<{ at: string; kind: string; stage?: string; detail?: string }>;
 }
 
 interface Control {
@@ -119,10 +194,12 @@ interface StageOutcome {
 }
 
 class WorkflowControlStop extends Error {
-	constructor(readonly kind: "paused" | "quit") {
+	constructor(readonly kind: "paused" | "quit" | "waiting-approval" | "waiting-checks") {
 		super(kind);
 	}
 }
+
+class WorkflowBlocked extends Error {}
 
 const activeRuns = new Map<string, Control>();
 
@@ -159,6 +236,37 @@ function statePath(id: string): string {
 	return path.join(runDir(id), "state.json");
 }
 
+function deliveryStateRoot(state: RunState): string {
+	return runDir(state.id);
+}
+
+function stageCwd(state: RunState, stage: BaseStage): string {
+	if (state.workflow === "deliver-ticket" && state.worktreePath && !["preflight", "plan", "approve-mutation", "worktree"].includes(stage.id)) return state.worktreePath;
+	return state.cwd;
+}
+
+function recordEvent(state: RunState, kind: string, stage?: string, detail?: string): void {
+	state.events.push({ at: now(), kind, stage, detail: detail ? compact(detail, 500) : undefined });
+	if (state.events.length > 200) state.events.splice(0, state.events.length - 200);
+}
+
+function deliveryLimits(state: RunState): DeliveryLimits | undefined {
+	return state.workflow === "deliver-ticket" ? state.limits : undefined;
+}
+
+function checkDeliveryBudget(state: RunState): void {
+	const limits = deliveryLimits(state);
+	if (!limits) return;
+	if (state.agentUsage.children >= limits.maxChildAgents) throw new WorkflowBlocked(`Delivery child-agent limit reached (${limits.maxChildAgents})`);
+	if (limits.maxCost !== undefined && state.agentUsage.cost >= limits.maxCost) throw new WorkflowBlocked(`Delivery cost limit reached (${limits.maxCost})`);
+}
+
+function countBlockingFindings(output: string): number {
+	if (!/ACTIONABLE FINDINGS/i.test(output)) return 0;
+	const numbered = output.match(/^\s*(?:[-*]|\d+[.)])\s+.*$/gm)?.length ?? 0;
+	return Math.max(1, numbered);
+}
+
 async function atomicWrite(filePath: string, content: string): Promise<void> {
 	await fs.promises.mkdir(path.dirname(filePath), { recursive: true, mode: 0o700 });
 	const temporary = `${filePath}.${process.pid}.${Math.random().toString(36).slice(2)}.tmp`;
@@ -183,7 +291,12 @@ async function saveState(state: RunState): Promise<void> {
 
 async function loadState(id: string): Promise<RunState> {
 	const parsed = JSON.parse(await fs.promises.readFile(statePath(id), "utf8")) as RunState;
-	if (parsed.version !== 1 || parsed.id !== id) throw new Error(`Unsupported workflow state: ${id}`);
+	if ((parsed.version !== 1 && parsed.version !== 2) || parsed.id !== id) throw new Error(`Unsupported workflow state: ${id}`);
+	parsed.version = 2;
+	parsed.reviewRounds ??= 0;
+	parsed.repairCount ??= 0;
+	parsed.agentUsage ??= { children: 0, input: 0, output: 0, cacheRead: 0, cacheWrite: 0, cost: 0, byAgent: {} };
+	parsed.events ??= [];
 	return parsed;
 }
 
@@ -234,6 +347,10 @@ function validateStage(value: unknown, where: string): Stage {
 		stage.stages = stage.stages.map((child, index) => validateStage(child, `${where}.stages[${index}]`));
 		return stage;
 	}
+	if (base.type === "delivery-preflight") return value as unknown as DeliveryPreflightStage;
+	if (base.type === "delivery-worktree") return value as unknown as DeliveryWorktreeStage;
+	if (base.type === "github-pr-create") return value as unknown as GithubPrCreateStage;
+	if (base.type === "github-pr-checks") return value as unknown as GithubChecksStage;
 	throw new Error(`${where}: unsupported stage type ${base.type}`);
 }
 
@@ -245,7 +362,17 @@ function loadWorkflow(name: string): WorkflowDefinition {
 		throw new Error(`${name}.json: expected name, description, and stages`);
 	}
 	const stages = parsed.stages.map((stage, index) => validateStage(stage, `${name}.stages[${index}]`));
-	return { name, description: parsed.description, stages, maxRepairAttempts: parsed.maxRepairAttempts };
+	let delivery: WorkflowDefinition["delivery"];
+	if (name === "deliver-ticket") {
+		if (!isRecord(parsed.delivery) || !Number.isInteger(parsed.delivery.maxChildAgents) || parsed.delivery.maxChildAgents < 1 || parsed.delivery.maxChildAgents > 8 || !Number.isInteger(parsed.delivery.maxRepairRounds) || parsed.delivery.maxRepairRounds < 0 || parsed.delivery.maxRepairRounds > 3) {
+			throw new Error(`${name}.json: delivery needs bounded maxChildAgents and maxRepairRounds`);
+		}
+		if (parsed.delivery.maxCost !== undefined && (typeof parsed.delivery.maxCost !== "number" || parsed.delivery.maxCost <= 0)) throw new Error(`${name}.json: delivery maxCost must be positive`);
+		if (!stages.some((stage) => stage.type === "delivery-preflight") || !stages.some((stage) => stage.type === "delivery-worktree") || !stages.some((stage) => stage.type === "github-pr-create")) throw new Error(`${name}.json: delivery needs preflight, worktree, and PR stages`);
+		for (const stage of stages) if (stage.type === "repair-loop" && stage.maxAttempts > parsed.delivery.maxRepairRounds) throw new Error(`${name}.json: repair loop exceeds delivery maxRepairRounds`);
+		delivery = parsed.delivery as unknown as WorkflowDefinition["delivery"];
+	}
+	return { name, description: parsed.description, stages, maxRepairAttempts: parsed.maxRepairAttempts, delivery };
 }
 
 function discoverWorkflows(): Array<{ name: string; description: string }> {
@@ -313,7 +440,7 @@ function resultKey(stage: Stage, prefix?: string): string {
 async function runCheck(state: RunState, stage: CheckStage, control: Control): Promise<StageOutcome> {
 	const command = trustedCheckCommand(stage.check);
 	return await new Promise<StageOutcome>((resolve) => {
-		const child = spawn(command[0], command.slice(1), { cwd: state.cwd, stdio: ["ignore", "pipe", "pipe"] });
+		const child = spawn(command[0], command.slice(1), { cwd: stageCwd(state, stage), shell: false, stdio: ["ignore", "pipe", "pipe"] });
 		let output = "";
 		const append = (chunk: Buffer) => {
 			output += chunk.toString();
@@ -355,18 +482,35 @@ async function runDelegate(
 	};
 	const makeDetails = () => ({ mode: "single" as const, agentScope: "user" as const, projectAgentsDir: null, results: [] });
 	const run = async (agent: string, task: string, step: number): Promise<SingleResult> => {
-		return runSingleAgent(
-			state.cwd,
+		checkDeliveryBudget(state);
+		state.agentUsage.children++;
+		state.agentUsage.byAgent[agent] ??= { children: 0, cost: 0 };
+		state.agentUsage.byAgent[agent].children++;
+		recordEvent(state, "child-start", stage.id, agent);
+		await saveState(state);
+		const result = await runSingleAgent(
+			stageCwd(state, stage),
 			defaults,
 			discovery.agents,
 			agent,
 			renderTemplate(task, state, stage, attempt),
-			state.cwd,
+			stageCwd(state, stage),
 			step,
 			control.abort.signal,
 			undefined,
 			makeDetails,
 		);
+		state.agentUsage.input += result.usage.input;
+		state.agentUsage.output += result.usage.output;
+		state.agentUsage.cacheRead += result.usage.cacheRead;
+		state.agentUsage.cacheWrite += result.usage.cacheWrite;
+		state.agentUsage.cost += result.usage.cost;
+		state.agentUsage.byAgent[agent].cost += result.usage.cost;
+		recordEvent(state, "child-end", stage.id, `${agent} exit=${result.exitCode}`);
+		await saveState(state);
+		const limits = deliveryLimits(state);
+		if (limits?.maxCost !== undefined && state.agentUsage.cost > limits.maxCost) throw new WorkflowBlocked(`Delivery cost limit exceeded (${limits.maxCost})`);
+		return result;
 	};
 
 	if (stage.mode === "parallel" || stage.tasks) {
@@ -382,16 +526,87 @@ async function runDelegate(
 	return { ok: !isFailedResult(result), output: getResultOutput(result), error: result.errorMessage };
 }
 
+async function runDeliveryPreflight(state: RunState, stage: DeliveryPreflightStage): Promise<StageOutcome> {
+	const facts: DeliveryPreflight = await runDeliveryPreflightCommand(state.cwd, stage.openPr ?? true);
+	state.baseRoot = facts.root;
+	state.baseBranch = facts.branch;
+	state.baseSha = facts.sha;
+	recordEvent(state, "preflight-passed", stage.id, JSON.stringify(facts.evidence));
+	return { ok: true, output: JSON.stringify(facts.evidence) };
+}
+
+async function runDeliveryPreflightCommand(cwd: string, requireGitHub: boolean): Promise<DeliveryPreflight> {
+	return runDeliveryPreflightFacts(cwd, requireGitHub);
+}
+
+async function runDeliveryWorktree(state: RunState, stage: DeliveryWorktreeStage): Promise<StageOutcome> {
+	if (!state.baseBranch || !state.ticketId) throw new Error("Delivery worktree needs a completed preflight and ticket id");
+	const liveBase = await runDeliveryPreflightFacts(state.cwd, false);
+	if (liveBase.root !== state.baseRoot || liveBase.branch !== state.baseBranch || liveBase.sha !== state.baseSha) throw new Error("Base checkout changed after planning; delivery refuses to create a worktree");
+	const branch = state.worktreeBranch ?? deliveryBranch(state.ticketId, state.id);
+	const worktreePath = state.worktreePath ?? path.join(deliveryStateRoot(state), "worktree");
+	assertWithin(deliveryStateRoot(state), worktreePath);
+	const facts = await ensureDeliveryWorktree(state.cwd, state.baseBranch, worktreePath, branch, deliveryStateRoot(state));
+	state.worktreePath = facts.path;
+	state.worktreeBranch = facts.branch;
+	recordEvent(state, facts.created ? "worktree-created" : "worktree-reused", stage.id, `${facts.branch} ${facts.path}`);
+	return { ok: true, output: JSON.stringify(facts) };
+}
+
+function deliveryTitle(state: RunState, stage: GithubPrCreateStage): string {
+	const summary = state.input.split(/\r?\n/, 1)[0].trim().replace(/\s+/g, " ").slice(0, 100);
+	return `${stage.titlePrefix ?? "deliver"}: ${state.ticketId ?? state.id}${summary ? ` — ${summary}` : ""}`.slice(0, 200);
+}
+
+async function runGithubPrCreate(state: RunState, stage: GithubPrCreateStage): Promise<StageOutcome> {
+	if (!state.worktreePath || !state.baseBranch || !state.worktreeBranch) throw new Error("PR creation needs a delivery worktree");
+	const headResult = await runFixedCommand("git", ["rev-parse", "HEAD"], state.worktreePath);
+	if (headResult.exitCode !== 0) throw new Error("Unable to resolve delivery worktree HEAD");
+	const headSha = headResult.stdout.trim().split(/\r?\n/, 1)[0];
+	state.headSha = headSha;
+	if (state.pr) {
+		const current = await readPullRequest(state.worktreePath, state.pr.number, state.baseBranch, state.worktreeBranch);
+		if (current.headSha !== headSha) throw new Error("Existing pull request does not point at the current delivery HEAD SHA");
+		state.pr = current;
+		return { ok: true, output: JSON.stringify(current) };
+	}
+	const body = renderTemplate(stage.body ?? "## Delivery\n\nTicket: {input}\n\nPlan and review evidence:\n{handoff}\n\nThis workflow does not merge automatically.", state, stage);
+	const bodyFile = path.join(deliveryStateRoot(state), "artifacts", "pr-body.md");
+	await atomicWrite(bodyFile, `${body}\n`);
+	if (!state.artifacts.includes("artifacts/pr-body.md")) state.artifacts.push("artifacts/pr-body.md");
+	const pr = await createPullRequest(state.worktreePath, state.baseBranch, state.worktreeBranch, deliveryTitle(state, stage), bodyFile);
+	state.pr = pr;
+	state.headSha = pr.headSha;
+	recordEvent(state, "pr-created", stage.id, `${pr.number} ${pr.headSha}`);
+	return { ok: true, output: JSON.stringify(pr) };
+}
+
+async function runGithubChecks(state: RunState): Promise<StageOutcome> {
+	if (!state.pr || !state.worktreePath || !state.headSha) throw new Error("PR checks need a created pull request and recorded HEAD SHA");
+	const checks = await observePullRequestChecks(state.worktreePath, state.pr.number, state.headSha);
+	state.checks = checks;
+	state.pr.checks = checks;
+	recordEvent(state, "pr-checks", "pr-checks", `${checks.status} ${checks.checks.length} check(s) at ${checks.headSha}`);
+	if (checks.status === "pending") throw new WorkflowControlStop("waiting-checks");
+	return { ok: checks.status === "green", output: JSON.stringify(checks), error: checks.status === "failed" ? "Required GitHub checks are not green" : undefined };
+}
+
 async function approveStage(state: RunState, stage: ApprovalStage, ctx: ExtensionContext): Promise<StageOutcome> {
-	if (!ctx.hasUI) throw new WorkflowControlStop("paused");
 	state.status = "waiting-approval";
+	recordEvent(state, "approval-requested", stage.id, stage.message);
 	await saveState(state);
+	if (!ctx.hasUI) throw new WorkflowControlStop("waiting-approval");
 	const approved = await ctx.ui.confirm(
 		"Approve workflow stage",
 		`${renderTemplate(stage.message, state, stage)}\n\nRun: ${state.id}\nWorkflow: ${state.workflow}`,
 	);
 	if (!approved) throw new WorkflowControlStop("paused");
 	for (const stageId of stage.for) if (!state.approvals.includes(stageId)) state.approvals.push(stageId);
+	if (stage.terminal) {
+		recordEvent(state, "approval-granted-boundary", stage.id, "No merge operation is performed by deliver-ticket.");
+		await saveState(state);
+		throw new WorkflowControlStop("waiting-approval");
+	}
 	return { ok: true, output: `Approved: ${stage.for.join(", ")}` };
 }
 
@@ -406,6 +621,7 @@ async function executeStage(
 	checkControl(control);
 	state.currentStage = key;
 	state.status = "running";
+	recordEvent(state, "stage-start", key);
 	await saveState(state);
 
 	let outcome: StageOutcome;
@@ -426,13 +642,31 @@ async function executeStage(
 		} else {
 			outcome = await runDelegate(state, stage, ctx, control, attempt);
 		}
+	} else if (stage.type === "delivery-preflight") {
+		outcome = await runDeliveryPreflight(state, stage);
+	} else if (stage.type === "delivery-worktree") {
+		if (!state.approvals.includes(stage.id)) {
+			await approveStage(state, { id: `approval-${stage.id}`, type: "approval", for: [stage.id], message: `Allow creation of the isolated delivery worktree for ${state.ticketId ?? state.id}?` }, ctx);
+		}
+		outcome = await runDeliveryWorktree(state, stage);
+	} else if (stage.type === "github-pr-create") {
+		if (!state.approvals.includes(stage.id)) {
+			await approveStage(state, { id: `approval-${stage.id}`, type: "approval", for: [stage.id], message: "Allow opening the GitHub pull request for this delivery run?" }, ctx);
+		}
+		outcome = await runGithubPrCreate(state, stage);
+	} else if (stage.type === "github-pr-checks") {
+		outcome = await runGithubChecks(state);
 	} else {
 		const triggered = stage.if.includes("always") || stage.if.some((id) => state.stageResults[id]?.status === "failed");
 		if (!triggered) return { ok: true, output: "Repair loop skipped: referenced stages are green." };
 		let last: StageOutcome = { ok: false, output: "repair loop did not run" };
 		const startAttempt = state.loopAttempts[stage.id] ?? 0;
 		for (let currentAttempt = Math.max(1, startAttempt); currentAttempt <= stage.maxAttempts; currentAttempt++) {
+			const limits = deliveryLimits(state);
+			if (limits && state.repairCount >= limits.maxRepairRounds) throw new WorkflowBlocked(`Delivery repair-round limit reached (${limits.maxRepairRounds})`);
 			state.loopAttempts[stage.id] = currentAttempt;
+			state.repairCount++;
+			recordEvent(state, "repair-round", key, String(currentAttempt));
 			await saveState(state);
 			let attemptPassed = true;
 			for (const inner of stage.stages) {
@@ -460,6 +694,15 @@ async function executeStage(
 		if (stage.failureIfContains && outcome.output.includes(stage.failureIfContains)) {
 			outcome = { ...outcome, ok: false, error: `Output matched failure marker: ${stage.failureIfContains}` };
 		}
+		if (stage.review) {
+			const blockingFindings = countBlockingFindings(outcome.output);
+			state.reviewRounds++;
+			if (state.workflow === "deliver-ticket" && state.repairCount > 0 && blockingFindings > 0 && state.lastBlockingFindings !== undefined && blockingFindings >= state.lastBlockingFindings) {
+				state.nonDecreasingFindings = true;
+				outcome = { ok: false, output: outcome.output, error: `Blocking findings did not decrease (${blockingFindings} >= ${state.lastBlockingFindings})` };
+			}
+			state.lastBlockingFindings = blockingFindings;
+		}
 		if (stage.handoff) state.handoffs[stage.id] = compact(outcome.output);
 		await writeArtifact(state, stage, outcome.output, attempt);
 	}
@@ -484,6 +727,7 @@ async function executeRun(
 				error: outcome.error,
 				updatedAt: now(),
 			};
+			recordEvent(state, outcome.ok ? "stage-passed" : "stage-failed", stage.id, outcome.error);
 			await saveState(state);
 			if (!outcome.ok && !stage.continueOnFailure) throw new Error(outcome.error || outcome.output);
 			checkControl(control);
@@ -495,10 +739,16 @@ async function executeRun(
 	} catch (error) {
 		const controlStop = error instanceof WorkflowControlStop ? error.kind : control.quitRequested ? "quit" : control.pauseRequested ? "paused" : undefined;
 		if (controlStop) {
-			state.status = controlStop === "paused" ? "paused" : "quit";
+			state.status = controlStop === "quit" ? "quit" : controlStop === "waiting-checks" ? "waiting-checks" : controlStop === "waiting-approval" ? "waiting-approval" : "paused";
 			if (controlStop === "quit") state.error = "Stopped by user.";
 			await saveState(state);
-			ctx.ui.notify(`Workflow ${state.id}: ${state.status}`, controlStop === "paused" ? "info" : "warning");
+			ctx.ui.notify(`Workflow ${state.id}: ${state.status}`, state.status === "paused" || state.status === "waiting-approval" || state.status === "waiting-checks" ? "info" : "warning");
+		} else if (error instanceof WorkflowBlocked) {
+			state.status = "blocked";
+			state.error = error.message;
+			recordEvent(state, "blocked", state.currentStage, error.message);
+			await saveState(state);
+			ctx.ui.notify(`Workflow ${state.id} blocked: ${state.error}`, "warning");
 		} else {
 			state.status = "failed";
 			state.error = error instanceof Error ? error.message : String(error);
@@ -514,16 +764,38 @@ function newRunId(workflow: string): string {
 	return `${workflow}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
+async function reconcileDeliveryState(state: RunState): Promise<void> {
+	if (state.workflow !== "deliver-ticket") return;
+	const facts = await runDeliveryPreflightFacts(state.cwd, true);
+	if (state.baseRoot && facts.root !== state.baseRoot) throw new Error("Delivery base repository changed while paused");
+	if (state.baseBranch && facts.branch !== state.baseBranch) throw new Error("Delivery base branch changed while paused");
+	if (state.baseSha && facts.sha !== state.baseSha) throw new Error("Delivery base HEAD changed while paused; start a new delivery run");
+	if (state.worktreePath && state.worktreeBranch && state.baseBranch) {
+		await ensureDeliveryWorktree(state.cwd, state.baseBranch, state.worktreePath, validateBranchName(state.worktreeBranch), deliveryStateRoot(state));
+		const headResult = await runFixedCommand("git", ["rev-parse", "HEAD"], state.worktreePath);
+		if (headResult.exitCode !== 0) throw new Error("Unable to reconcile delivery worktree HEAD");
+		const liveHead = headResult.stdout.trim().split(/\r?\n/, 1)[0];
+		if (state.headSha && state.pr && liveHead !== state.headSha) throw new Error("Delivery worktree changed after the recorded PR HEAD SHA");
+		if (state.pr) {
+			const pr = await readPullRequest(state.worktreePath, state.pr.number, state.baseBranch, state.worktreeBranch);
+			if (pr.headSha !== liveHead) throw new Error("Live pull request HEAD does not match the delivery worktree");
+			state.pr = { ...state.pr, ...pr };
+		}
+	}
+	recordEvent(state, "resume-reconciled", undefined, `base=${facts.sha}${state.pr ? ` pr=${state.pr.number}` : ""}`);
+}
+
 async function startWorkflow(name: string, input: string, cwd: string, ctx: ExtensionContext): Promise<RunState> {
 	const workflow = loadWorkflow(name);
 	const id = newRunId(name);
 	const timestamp = now();
+	const deliveryInput = name === "deliver-ticket" ? parseDeliveryInput(input) : undefined;
 	const state: RunState = {
-		version: 1,
+		version: 2,
 		id,
 		workflow: workflow.name,
 		cwd,
-		input,
+		input: deliveryInput?.task ?? input,
 		status: "running",
 		currentStage: workflow.stages[0]?.id ?? "",
 		startedAt: timestamp,
@@ -533,7 +805,15 @@ async function startWorkflow(name: string, input: string, cwd: string, ctx: Exte
 		stageResults: {},
 		loopAttempts: {},
 		approvals: [],
+		ticketId: deliveryInput?.ticketId,
+		taskId: deliveryInput?.ticketId,
+		limits: workflow.delivery,
+		reviewRounds: 0,
+		repairCount: 0,
+		agentUsage: { children: 0, input: 0, output: 0, cacheRead: 0, cacheWrite: 0, cost: 0, byAgent: {} },
+		events: [],
 	};
+	recordEvent(state, "run-started", workflow.name, deliveryInput ? `ticket=${deliveryInput.ticketId}` : undefined);
 	const control: Control = { abort: new AbortController(), pauseRequested: false, quitRequested: false };
 	activeRuns.set(id, control);
 	await saveState(state);
@@ -543,9 +823,18 @@ async function startWorkflow(name: string, input: string, cwd: string, ctx: Exte
 
 async function resumeWorkflow(id: string, ctx: ExtensionContext): Promise<RunState> {
 	const state = await loadState(id);
-	if (state.status !== "paused" && state.status !== "waiting-approval") throw new Error(`Run ${id} is ${state.status}; only paused runs can resume.`);
+	if (state.status !== "paused" && state.status !== "waiting-approval" && state.status !== "waiting-checks") throw new Error(`Run ${id} is ${state.status}; only paused or waiting runs can resume.`);
 	if (activeRuns.has(id)) throw new Error(`Run ${id} is already active.`);
 	const workflow = loadWorkflow(state.workflow);
+	try {
+		await reconcileDeliveryState(state);
+	} catch (error) {
+		state.status = "blocked";
+		state.error = error instanceof Error ? error.message : String(error);
+		recordEvent(state, "resume-blocked", undefined, state.error);
+		await saveState(state);
+		throw error;
+	}
 	const control: Control = { abort: new AbortController(), pauseRequested: false, quitRequested: false };
 	activeRuns.set(id, control);
 	// A resumed run is a new authorization boundary. Approval stages are
@@ -564,7 +853,8 @@ async function resumeWorkflow(id: string, ctx: ExtensionContext): Promise<RunSta
 
 function describeState(state: RunState): string {
 	const finished = Object.values(state.stageResults).filter((result) => result.status !== "skipped").length;
-	return `${state.id}: ${state.workflow} ${state.status}; stage=${state.currentStage || "done"}; results=${finished}; artifacts=${state.artifacts.join(", ") || "none"}`;
+	const delivery = state.workflow === "deliver-ticket" ? `; ticket=${state.ticketId ?? "?"}; branch=${state.worktreeBranch ?? "pending"}; head=${state.headSha ?? "pending"}; pr=${state.pr?.number ?? "pending"}; children=${state.agentUsage.children}; repairs=${state.repairCount}` : "";
+	return `${state.id}: ${state.workflow} ${state.status}; stage=${state.currentStage || "done"}; results=${finished}; artifacts=${state.artifacts.join(", ") || "none"}${delivery}`;
 }
 
 async function command(args: string, ctx: ExtensionCommandContext): Promise<void> {
@@ -624,7 +914,7 @@ async function command(args: string, ctx: ExtensionCommandContext): Promise<void
 const WorkflowParams = Type.Object({
 	action: Type.Optional(Type.String({ description: "list, show, start, status, pause, resume, or quit" })),
 	name: Type.Optional(Type.String({ description: "Workflow or run name" })),
-	input: Type.Optional(Type.String({ description: "Narrow task context for a new run" })),
+	input: Type.Optional(Type.String({ description: "Narrow task context; deliver-ticket requires TICKET_ID TASK_TEXT and never executes task text" })),
 });
 
 export default function workflowExtension(pi: ExtensionAPI) {

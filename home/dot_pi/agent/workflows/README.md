@@ -16,6 +16,51 @@ Commands:
 The same actions are available to the `workflow` tool. Keep tool calls narrow: use `list`,
 `show`, and `status` before starting a run.
 
+## `deliver-ticket`
+
+Start it explicitly with `/workflow start deliver-ticket TICKET_ID TASK_TEXT`. The first token
+is a conservative ticket id (`A-Z`, numbers, `.`, `_`, `/`, and `-`); everything after it is
+task context. Task text is passed to the planner/fixer/reviewer as text only. It is never a
+command, check name, branch fragment, or shell expression. Normal prompts never enter this
+profile.
+
+The profile runs this bounded path:
+
+1. deterministic preflight checks the repository root, current branch, exact base SHA, clean
+   status, Git worktree registration, `git`, `gh auth status`, and current GitHub repository
+   access;
+2. an `oracle` plan runs read-only in the base checkout;
+3. an interactive approval is required before a per-run branch/worktree is created and the
+   `fixer` receives mutation access;
+4. the fixer, trusted checks, and `reviewer` run in the isolated worktree, with one bounded
+   repair round and a non-decreasing blocking-finding guard;
+5. a second approval is required before `gh pr create`, then fixed-argv GitHub stages record
+   the PR and observe required checks at the exact head SHA;
+6. the run stops at a fresh merge approval boundary. It never calls `gh pr merge`; approving
+   the boundary records intent and leaves the PR open. There is no automatic merge path, and
+   RPC/no-UI mode cannot merge.
+
+Delivery worktrees and ledgers live below
+`$PI_WORKFLOW_STATE_DIR/runs/RUN_ID/` (default `~/.agents/local/pi/workflows/runs/RUN_ID/`).
+The ledger records ticket/task id, status, base root/branch/SHA, worktree path/branch, head
+SHA, PR facts, required-check evidence, review rounds, repair count, child-agent usage/cost,
+limits, approvals, and a compact event history. PR body and selected stage artifacts are kept
+beside the ledger. All state and generated body files use the existing atomic write helper.
+
+The base checkout must already be clean and at its repository root. Delivery refuses detached
+HEADs, dirty files, changed base branches/SHA on resume, unsafe worktree paths, and branch or PR
+identifiers that fail validation. It never stashes, resets, deletes user files, or executes
+`sh -lc`; Git and GitHub helpers use fixed executable names and argv arrays with `shell: false`.
+Resume reconciles the base checkout, delivery worktree, live PR state, and exact head SHA before
+restarting unfinished stages. Prior approvals are revoked on resume. The default limits are six
+child agents, one repair round, and an optional cost ceiling; a limit stops at a safe stage
+boundary and persists `blocked` state.
+
+The profile intentionally does not port drive-spec-delivery's Linear, Forgejo/tea, Woodpecker,
+large routing matrix, shadow swarms, sandbox runtime, or automatic merge behavior. GitHub CLI
+authentication and repository access are prerequisites when opening a PR; no live PR/CI/merge
+operation is implied by loading or listing the definition.
+
 Definitions are portable and Chezmoi-managed in `~/.pi/agent/workflows/`. Run state is kept
 machine-local in `~/.agents/local/pi/workflows/runs/RUN_ID/state.json`; selected stage outputs
 are saved under that run's `artifacts/` directory. State writes use a same-directory
@@ -40,7 +85,10 @@ Pi's `message_end` JSON events and stderr; it does not depend on an unsupported
 
 To add a workflow, copy a compact JSON definition into this directory with a matching
 `name`, `description`, and `stages`. Supported stages are `delegate` (single or bounded
-parallel), `check`, `approval`, and `repair-loop`. Delegation task strings support
+parallel), `check`, `approval`, `repair-loop`, `delivery-preflight`, `delivery-worktree`,
+`github-pr-create`, and `github-pr-checks`. The delivery/GitHub stages are reserved for the
+`deliver-ticket` profile and use fixed helper argv; they are not free-form command stages.
+Delegation task strings support
 `{input}`, `{handoff}`, and `{attempt}`. Set `handoffFrom` to name exactly which prior stage
 outputs enter a task. Set `artifact` only for outputs worth keeping. Changes to workflow
 definitions do not change the model catalog, MCP templates, or baseline context injection.
