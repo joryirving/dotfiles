@@ -1,6 +1,6 @@
 {
   "name": "debug-until-green",
-  "description": "Diagnose, apply bounded fixes, and stop when the specified check is green or the bound is spent.",
+  "description": "Diagnose, apply bounded fixes, and stop when the trusted diff check is green or the bound is spent.",
   "stages": [
     {
       "id": "diagnose",
@@ -27,7 +27,8 @@
         {
           "id": "check",
           "type": "check",
-          "command": ["sh", "-lc", "{input}"],
+          "check": "git-diff-check",
+          "label": "git diff --check",
           "artifact": "check.txt"
         }
       ]

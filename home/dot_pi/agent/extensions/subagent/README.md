@@ -11,6 +11,9 @@ Delegate tasks to specialized subagents with isolated context windows.
 - **Usage tracking**: Shows turns, tokens, cost, and context usage per agent
 - **Abort support**: Ctrl+C propagates to kill subagent processes
 
+The child JSON stream is consumed through Pi's `message_end` events plus stderr. The
+launcher does not rely on a separate `tool_result_end` event.
+
 ## Structure
 
 ```

@@ -28,7 +28,7 @@
     {
       "id": "check",
       "type": "check",
-      "command": ["git", "diff", "--check"],
+      "check": "git-diff-check",
       "label": "git diff --check",
       "artifact": "check.txt",
       "continueOnFailure": true
@@ -61,7 +61,7 @@
         {
           "id": "repair-check",
           "type": "check",
-          "command": ["git", "diff", "--check"],
+          "check": "git-diff-check",
           "artifact": "repair-check.txt"
         },
         {

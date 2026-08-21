@@ -338,7 +338,8 @@ export async function runSingleAgent(
 			args.push("--append-system-prompt", tmpPromptPath);
 		}
 
-		args.push(`Task: ${task}`);
+		// Keep a task beginning with '-' from being parsed as a Pi CLI option.
+		args.push("--", `Task: ${task}`);
 		let wasAborted = false;
 
 		const exitCode = await new Promise<number>((resolve) => {
@@ -380,12 +381,9 @@ export async function runSingleAgent(
 					}
 					emitUpdate();
 				}
-
-				if (event.type === "tool_result_end" && event.message) {
-					currentResult.messages.push(event.message as Message);
-					emitUpdate();
-				}
 			};
+
+			let exited = false;
 
 			proc.stdout.on("data", (data) => {
 				buffer += data.toString();
@@ -399,11 +397,13 @@ export async function runSingleAgent(
 			});
 
 			proc.on("close", (code) => {
+				exited = true;
 				if (buffer.trim()) processLine(buffer);
 				resolve(code ?? 0);
 			});
 
 			proc.on("error", () => {
+				exited = true;
 				resolve(1);
 			});
 
@@ -412,7 +412,7 @@ export async function runSingleAgent(
 					wasAborted = true;
 					proc.kill("SIGTERM");
 					setTimeout(() => {
-						if (!proc.killed) proc.kill("SIGKILL");
+						if (!exited && proc.exitCode === null && proc.signalCode === null) proc.kill("SIGKILL");
 					}, 5000);
 				};
 				if (signal.aborted) killProc();

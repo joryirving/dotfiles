@@ -25,9 +25,18 @@ full outputs are only kept when a stage declares an artifact.
 
 Delegation uses the existing named user agents and subagent child launcher. Parallel stages
 are capped at four children. `mutation: true` stages require interactive approval, and an
-explicit `approval` stage can pre-approve named mutation stages. Checks use an argument-array
-command and run in the workflow's working directory. Repair loops must declare `maxAttempts`
-and are limited to three by the extension.
+explicit `approval` stage can pre-approve named mutation stages. Check stages use only a
+source-controlled `check` name resolved by the extension's trusted registry; they do not
+accept command arrays, shell strings, `{input}`, or other template expansion. The initial
+registry contains `git-diff-check` (`git diff --check`). Add a new fixed argv entry to that
+registry before using another check. Repair loops must declare `maxAttempts` and are limited
+to three by the extension.
+
+Resuming skips only passed non-approval stages and starts at the first unfinished, failed, or
+approval stage. Prior approvals are revoked before execution continues, so approval stages
+and mutation gates always require fresh confirmation after resume. The subagent launcher uses
+Pi's `message_end` JSON events and stderr; it does not depend on an unsupported
+`tool_result_end` event.
 
 To add a workflow, copy a compact JSON definition into this directory with a matching
 `name`, `description`, and `stages`. Supported stages are `delegate` (single or bounded
@@ -36,6 +45,9 @@ parallel), `check`, `approval`, and `repair-loop`. Delegation task strings suppo
 outputs enter a task. Set `artifact` only for outputs worth keeping. Changes to workflow
 definitions do not change the model catalog, MCP templates, or baseline context injection.
 The runner has no sandbox: use a disposable worktree or container for autonomous mutation.
+
+The `debug-until-green` input is diagnosis context only. Its check is the fixed trusted
+`git-diff-check`; free-form input is never executed.
 
 ## Chezmoi ownership
 
@@ -53,3 +65,11 @@ edited locally, default Chezmoi behavior prompts before overwriting it; `chezmoi
 to inspect the change first. `home/.chezmoiignore` excludes `~/.pi/agent/auth.json` and
 `~/.pi/agent/models-store.json`; `chezmoi ignored` reports both, so apply does not overwrite
 those machine-local runtime files.
+
+The ToolHive endpoint is shared with the managed OpenCode and Zed configurations. A safe
+unauthenticated GET to `https://mcp.jory.dev/mcp` returned HTTP 401 during validation, so Pi
+retains its `x-api-key` sourced from 1Password; the secret is not stored in this repository.
+OpenCode and Zed reference the same URL without a visible header in their managed templates.
+Pi's template uses `lifecycle: lazy`, matching the installed `pi-mcp-adapter` 2.27.0 schema
+(`keep-alive`, `lazy`, `lazy-keep-alive`, or `eager`); the redacted rendered config loaded
+successfully through Pi 0.84.2 and that adapter.

@@ -11,7 +11,7 @@
       "headers": {
         "x-api-key": "{{ onepasswordRead "op://Kubernetes/toolhive/TOOLHIVE_MACBOOK_API_KEY" }}"
       },
-      "connectionMode": "lazy"
+      "lifecycle": "lazy"
     },
     "context7": {
       "command": "npx",
@@ -19,7 +19,7 @@
       "env": {
         "CONTEXT7_API_KEY": "{{ onepasswordRead "op://Kubernetes/context7/OPENCODE_API_KEY" }}"
       },
-      "connectionMode": "lazy"
+      "lifecycle": "lazy"
     }
   }
 }

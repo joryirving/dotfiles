@@ -54,7 +54,7 @@ interface DelegateStage extends BaseStage {
 
 interface CheckStage extends BaseStage {
 	type: "check";
-	command: string[];
+	check: string;
 	label?: string;
 }
 
@@ -125,6 +125,18 @@ class WorkflowControlStop extends Error {
 }
 
 const activeRuns = new Map<string, Control>();
+
+// Check commands are deliberately compiled into the extension. Workflow input
+// and templates must never be able to turn a check stage into shell execution.
+const TRUSTED_CHECKS: Record<string, readonly string[]> = {
+	"git-diff-check": ["git", "diff", "--check"],
+};
+
+function trustedCheckCommand(name: string): string[] {
+	const command = TRUSTED_CHECKS[name];
+	if (!command) throw new Error(`Unknown trusted check: ${name}`);
+	return [...command];
+}
 
 function now(): string {
 	return new Date().toISOString();
@@ -200,9 +212,8 @@ function validateStage(value: unknown, where: string): Stage {
 	}
 	if (base.type === "check") {
 		const stage = value as unknown as CheckStage;
-		if (!Array.isArray(stage.command) || stage.command.length === 0 || stage.command.some((part) => typeof part !== "string")) {
-			throw new Error(`${where}: check needs a non-empty string command array`);
-		}
+		if (typeof stage.check !== "string") throw new Error(`${where}: check needs a trusted check name`);
+		trustedCheckCommand(stage.check);
 		return stage;
 	}
 	if (base.type === "approval") {
@@ -300,7 +311,7 @@ function resultKey(stage: Stage, prefix?: string): string {
 }
 
 async function runCheck(state: RunState, stage: CheckStage, control: Control): Promise<StageOutcome> {
-	const command = stage.command.map((part) => renderTemplate(part, state, stage));
+	const command = trustedCheckCommand(stage.check);
 	return await new Promise<StageOutcome>((resolve) => {
 		const child = spawn(command[0], command.slice(1), { cwd: state.cwd, stdio: ["ignore", "pipe", "pipe"] });
 		let output = "";
@@ -455,9 +466,17 @@ async function executeStage(
 	return outcome;
 }
 
-async function executeRun(state: RunState, workflow: WorkflowDefinition, ctx: ExtensionContext, control: Control): Promise<void> {
+async function executeRun(
+	state: RunState,
+	workflow: WorkflowDefinition,
+	ctx: ExtensionContext,
+	control: Control,
+	resume = false,
+): Promise<void> {
 	try {
 		for (const stage of workflow.stages) {
+			const previous = state.stageResults[stage.id];
+			if (resume && stage.type !== "approval" && previous?.status === "passed") continue;
 			const outcome = await executeStage(state, stage, ctx, control, stage.id);
 			state.stageResults[stage.id] = {
 				status: outcome.ok ? "passed" : "failed",
@@ -529,10 +548,17 @@ async function resumeWorkflow(id: string, ctx: ExtensionContext): Promise<RunSta
 	const workflow = loadWorkflow(state.workflow);
 	const control: Control = { abort: new AbortController(), pauseRequested: false, quitRequested: false };
 	activeRuns.set(id, control);
+	// A resumed run is a new authorization boundary. Approval stages are
+	// replayed, and mutation stages cannot inherit prior approval entries.
+	state.approvals = [];
+	const resumeStage = workflow.stages.find(
+		(stage) => stage.type === "approval" || state.stageResults[stage.id]?.status !== "passed",
+	);
 	state.status = "running";
 	state.error = undefined;
+	state.currentStage = resumeStage?.id ?? "";
 	await saveState(state);
-	void executeRun(state, workflow, ctx, control);
+	void executeRun(state, workflow, ctx, control, true);
 	return state;
 }
 
