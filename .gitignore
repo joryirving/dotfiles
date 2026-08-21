@@ -16,3 +16,7 @@ Thumbs.db
 *.pem
 .env
 .env.local
+
+# Pi machine-local auth and model cache
+/home/dot_pi/agent/auth.json
+/home/dot_pi/agent/models-store.json

@@ -1,0 +1,37 @@
+{
+  "name": "debug-until-green",
+  "description": "Diagnose, apply bounded fixes, and stop when the trusted diff check is green or the bound is spent.",
+  "stages": [
+    {
+      "id": "diagnose",
+      "type": "delegate",
+      "agent": "oracle",
+      "task": "Reproduce and diagnose the reported failure. The requested check/issue is:\n{input}\nReturn exact evidence and a narrowly scoped fix plan. Read-only.",
+      "handoff": true
+    },
+    {
+      "id": "repair-loop",
+      "type": "repair-loop",
+      "if": ["always"],
+      "maxAttempts": 2,
+      "stages": [
+        {
+          "id": "fix",
+          "type": "delegate",
+          "agent": "fixer",
+          "mutation": true,
+          "handoffFrom": ["diagnose", "check"],
+          "task": "Apply one narrowly scoped fix for the diagnosis. Preserve unrelated changes and stop after this bounded pass.\n{handoff}",
+          "handoff": true
+        },
+        {
+          "id": "check",
+          "type": "check",
+          "check": "git-diff-check",
+          "label": "git diff --check",
+          "artifact": "check.txt"
+        }
+      ]
+    }
+  ]
+}

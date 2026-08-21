@@ -1,0 +1,78 @@
+# Pi workflows
+
+This is an opt-in workflow layer for the local Pi setup. Definitions are discovered from
+`~/.pi/agent/workflows/*.json`; normal prompts do not enter a workflow.
+
+Commands:
+
+- `/workflow list`
+- `/workflow show NAME`
+- `/workflow start NAME [short task context]`
+- `/workflow status [RUN_ID]`
+- `/workflow pause RUN_ID`
+- `/workflow resume RUN_ID`
+- `/workflow quit RUN_ID`
+
+The same actions are available to the `workflow` tool. Keep tool calls narrow: use `list`,
+`show`, and `status` before starting a run.
+
+Definitions are portable and Chezmoi-managed in `~/.pi/agent/workflows/`. Run state is kept
+machine-local in `~/.agents/local/pi/workflows/runs/RUN_ID/state.json`; selected stage outputs
+are saved under that run's `artifacts/` directory. State writes use a same-directory
+temporary file, `fsync`, and rename so an interrupted write does not replace the last good
+state. Handoffs are explicit per stage and capped before they are passed to another stage;
+full outputs are only kept when a stage declares an artifact.
+
+Delegation uses the existing named user agents and subagent child launcher. Parallel stages
+are capped at four children. `mutation: true` stages require interactive approval, and an
+explicit `approval` stage can pre-approve named mutation stages. Check stages use only a
+source-controlled `check` name resolved by the extension's trusted registry; they do not
+accept command arrays, shell strings, `{input}`, or other template expansion. The initial
+registry contains `git-diff-check` (`git diff --check`). Add a new fixed argv entry to that
+registry before using another check. Repair loops must declare `maxAttempts` and are limited
+to three by the extension.
+
+Resuming skips only passed non-approval stages and starts at the first unfinished, failed, or
+approval stage. Prior approvals are revoked before execution continues, so approval stages
+and mutation gates always require fresh confirmation after resume. The subagent launcher uses
+Pi's `message_end` JSON events and stderr; it does not depend on an unsupported
+`tool_result_end` event.
+
+To add a workflow, copy a compact JSON definition into this directory with a matching
+`name`, `description`, and `stages`. Supported stages are `delegate` (single or bounded
+parallel), `check`, `approval`, and `repair-loop`. Delegation task strings support
+`{input}`, `{handoff}`, and `{attempt}`. Set `handoffFrom` to name exactly which prior stage
+outputs enter a task. Set `artifact` only for outputs worth keeping. Changes to workflow
+definitions do not change the model catalog, MCP templates, or baseline context injection.
+The runner has no sandbox: use a disposable worktree or container for autonomous mutation.
+
+The `debug-until-green` input is diagnosis context only. Its check is the fixed trusted
+`git-diff-check`; free-form input is never executed.
+
+## Chezmoi ownership
+
+The repository's `.chezmoiroot` is `home`, so these source paths are the source of truth:
+
+- `home/dot_local/bin/executable_pi-child` -> `~/.local/bin/pi-child`
+- `home/dot_local/bin/executable_pi-lean` -> `~/.local/bin/pi-lean`
+- `home/dot_pi/agent/mcp.json.tmpl` -> `~/.pi/agent/mcp.json`
+- `home/dot_pi/agent/models.json.tmpl` -> `~/.pi/agent/models.json`
+- `home/dot_pi/agent/extensions`, `agents`, `prompts`, `workflows`, and `settings.json` -> matching `~/.pi/agent` paths
+
+`chezmoi apply` reconciles managed destinations from this source. If a destination was
+edited locally, default Chezmoi behavior prompts before overwriting it; `chezmoi apply
+--force` makes the source win without that prompt. Use `chezmoi apply --dry-run --verbose`
+to inspect the change first. `home/.chezmoiignore` excludes `~/.pi/agent/auth.json` and
+`~/.pi/agent/models-store.json`; `chezmoi ignored` reports both, so apply does not overwrite
+those machine-local runtime files.
+
+The ToolHive endpoint is shared with the managed OpenCode and Zed configurations. A safe
+unauthenticated GET to `https://mcp.jory.dev/mcp` returned HTTP 401 during validation, so
+all three clients use the same 1Password-backed `x-api-key`; the secret is not stored in
+this repository. OpenCode 1.18.18 reported `toolhive` as needing authentication, and Zed's
+active log reported that it required OAuth, before their headers were added. OpenCode's
+remote-server schema and Zed's `context_servers` schema both accept a `headers` map; Zed
+uses those values verbatim, so Chezmoi renders the key rather than relying on env expansion.
+Pi's template uses `lifecycle: lazy`, matching the installed `pi-mcp-adapter` 2.27.0 schema
+(`keep-alive`, `lazy`, `lazy-keep-alive`, or `eager`); the redacted rendered config loaded
+successfully through Pi 0.84.2 and that adapter.

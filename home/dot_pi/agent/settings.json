@@ -1,0 +1,21 @@
+{
+  "defaultProvider": "jory-litellm",
+  "defaultModel": "reasoning-pool",
+  "defaultProjectTrust": "ask",
+  "defaultTools": [
+    "read",
+    "bash",
+    "edit",
+    "write"
+  ],
+  "compaction": {
+    "enabled": true,
+    "reserveTokens": 16384,
+    "keepRecentTokens": 20000
+  },
+  "lastChangelogVersion": "0.84.2",
+  "theme": "dark",
+  "packages": [
+    "npm:pi-mcp-adapter@2.27.0"
+  ]
+}
