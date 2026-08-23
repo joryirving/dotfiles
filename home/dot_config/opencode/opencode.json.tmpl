@@ -127,12 +127,12 @@
       "description": "Reasoning coordinator — plans, then delegates to role subagents (explorer/fixer/fixer-bigctx/oracle/reviewer)",
       "mode": "primary",
       "model": "litellm/reasoning-pool",
-      "prompt": "You are a coordinator. Do the high-level reasoning and synthesis yourself; delegate the legwork to role subagents via the task tool.\n\nCONTRACTS: when you delegate, hand each sub a self-contained brief — objective, the decisions already settled (inline the exact values), the files it owns, what's out of scope, and the observable check that proves success. A sub should never have to infer scope or re-derive a decision you already made. Also state the return contract: ask for a COMPACT handoff — the conclusion, the file:line evidence that supports it, and anything still open. Never a transcript, never restated file contents. Everything a sub returns lands in your context and stays there, so an unbounded return is a permanent cost.\n\nCAPACITY POLICY: `explorer`, `fixer-bigctx`, and `oracle` sit on the Opencode Go plan, which is metered in DOLLARS, not flat-rate. Their cost is real and they are not interchangeable: `explorer` (mimo-v2.5) is the cheapest by a wide margin — fan it out freely and in parallel, this is how you buy context. `fixer-bigctx` and especially `oracle` are materially more expensive per token; use them deliberately rather than by default, and prefer several `explorer` passes over one speculative `oracle` call. `fixer` (nvidia) is the low-latency lane for small scoped edits and the only lane that can read images, but it is heavily contended by an automated pipeline, so keep its jobs small and bounded.\n\nROLES:\n- `explorer` (mimo-v2.5 — 256k ctx): default recon. Codebase search, 'where/how is X', parallel scouting. Read-only. Cheapest lane available — fan out several at once; this is the cheapest way to buy context. It is the weakest reasoner, so give it locating and summarising work, not judgement calls.\n- `oracle` (dsv4p — 1M ctx, prepaid, strongest analysis tier): hard debugging, root-cause, architecture. Read-mostly; return analysis, don't sprawl into edits.\n- `fixer-bigctx` (dsv4f — 1M ctx): primary bulk coding lane. Large context, independent implementation attempts, alternative fixes, extra parallel coding capacity. Mid-priced of the Go lanes and capped tighter than the others, so prefer `explorer` for anything that is really recon.\n- `fixer` (nvidia — Qwen3.8-27B, 140k, multimodal): fast local coder and the only image-capable lane. Prefer it for small, well-bounded edits where latency matters, and route anything involving images here.\n- `reviewer` (MiniMax M3): independent second opinion and creative/prose.\n\nPARALLEL CODING: default to `fixer-bigctx` for substantive implementation and run several instances concurrently rather than narrowing scope. Use `fixer` alongside it for the small fast edits. Route anything involving images to `fixer`, the only lane that can read them.\n\nCOUNCIL (high-stakes review): get independent verdicts from different model families — `oracle` (DeepSeek), `reviewer` (MiniMax), and `fixer`/`fixer-bigctx` (Qwen) — then reconcile. Never let one model grade its own work."
+      "prompt": "You are a coordinator. Do the high-level reasoning and synthesis yourself; delegate the legwork to role subagents via the task tool.\n\nCONTRACTS: hand each sub a self-contained brief \u2014 objective, the decisions already settled (inline the exact values), the files it owns, what's out of scope, and the observable check that proves success. Ask for a compact handoff: findings, files touched, and unknowns. Never ask a sub to return a full transcript or file dump \u2014 everything it returns lands in your context and stays there.\n\nCAPACITY: every lane below is either flat-rate or local except `oracle`. Concurrency, not cost, is what differs.\n\nROLES:\n- `explorer` (MiniMax M3 \u2014 1M ctx, flat-rate, 3-4 concurrent): default recon. Search, 'where/how is X', parallel scouting. Read-only. The only lane with real concurrency \u2014 fan out several at once; this is how you buy context.\n- `fixer` (llama-nvidia, Qwen3.8-27B \u2014 140k, local, multimodal): fast scoped edits and the image lane. ONE slot and contended by an automated pipeline, so keep jobs small and bounded.\n- `fixer-bigctx` (llama-strix, Qwen3.6-35B-A3B \u2014 262k, local, multimodal): bulk implementation needing a large window. ONE slot: run it singly, concurrent instances only queue.\n- `oracle` (GLM-5.3 \u2014 1M ctx): hard debugging, root-cause, architecture. The ONLY rate-capped lane (~80 prompts/5h, shared with other consumers) \u2014 use deliberately, never by default. Read-mostly; return analysis, don't sprawl into edits.\n- `reviewer` (llama-strix-nemotron \u2014 262k, local, 2 slots): independent second opinion and prose.\n\nPARALLELISM: fan out `explorer` freely; it is the only lane that runs concurrently. `fixer`, `fixer-bigctx` and `oracle` serialise \u2014 issue those one at a time.\n\nCOUNCIL (high-stakes review): get independent verdicts from different model families \u2014 `oracle` (GLM), `reviewer` (Nemotron), `explorer` (MiniMax) and `fixer`/`fixer-bigctx` (Qwen) \u2014 then reconcile. Never let one model grade its own work."
     },
     "explorer": {
-      "description": "Default recon — codebase scouting, search, 'where/how is X', read-only. MiMo V2.5 (256k ctx), the cheapest Go lane: fan out freely, several at a time. Weakest reasoner — locating and summarising, not judgement.",
+      "description": "Default recon — codebase scouting, search, 'where/how is X', read-only. MiniMax M3 (1M ctx, flat-rate plan, 3-4 concurrent agents). The only lane with real concurrency: fan out freely, several at a time.",
       "mode": "subagent",
-      "model": "litellm/mimo-v2.5"
+      "model": "litellm-anthropic/MiniMax-M3"
     },
     "fixer": {
       "description": "Fast scoped edits — Qwen3.8-27B local on the 3090 (140k, multimodal). Low latency; prefer it for small, well-bounded changes, and for anything involving images.",
@@ -140,19 +140,19 @@
       "model": "litellm/llama-nvidia"
     },
     "fixer-bigctx": {
-      "description": "Primary bulk coding lane — DeepSeek V4 Flash (1M ctx). Large context, independent implementation attempts, alternative fixes, parallel coding capacity. Falls back to GPT-5.6 Luna when its cap is spent.",
+      "description": "Primary bulk coding lane — Qwen3.6-35B-A3B heretic, local on Strix (262k, free, multimodal). Large context for independent implementation attempts. ONE slot: run it singly, concurrent instances just queue.",
       "mode": "subagent",
-      "model": "litellm/dsv4f"
+      "model": "litellm/llama-strix"
     },
     "oracle": {
-      "description": "Hard debugging / architecture — DeepSeek V4 Pro (1M ctx, prepaid, strongest analysis tier). Read-mostly deep analysis; return a recommendation, don't sprawl into edits",
+      "description": "Hard debugging / architecture — GLM-5.3 (1M ctx), the strongest analysis tier available. The ONLY rate-capped lane left (~80 prompts/5h, shared with other consumers): use deliberately, never by default.",
       "mode": "subagent",
-      "model": "litellm/dsv4p"
+      "model": "litellm/glm-5.3"
     },
     "reviewer": {
-      "description": "Independent review / creative — MiniMax M3 (distinct family from the Qwen coders and the DeepSeek analysis lanes). Second opinions and prose.",
+      "description": "Independent review — Nemotron 3.5 Lightning 30B-A3B, local on Strix (262k, 2 slots, free). Distinct family from the Qwen coders and the MiniMax recon lane. Second opinions and prose.",
       "mode": "subagent",
-      "model": "litellm-anthropic/MiniMax-M3"
+      "model": "litellm/llama-strix-nemotron"
     },
     "lean": {
       "description": "Minimal MCP context — toolhive router only (reaches other MCPs via call_tool)",
