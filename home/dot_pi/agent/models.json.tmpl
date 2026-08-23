@@ -3,7 +3,7 @@
     "jory-litellm": {
       "baseUrl": "https://litellm.jory.dev/v1",
       "api": "openai-completions",
-      "apiKey": "{{ onepasswordRead "op://Kubernetes/litellm/LITELLM_OPENCODE_API_KEY" }}",
+      "apiKey": "{{ onepasswordRead "op://Kubernetes/litellm/LITELLM_PI_API_KEY" }}",
       "authHeader": true,
       "models": [
         {
@@ -134,7 +134,7 @@
     "jory-litellm-anthropic": {
       "baseUrl": "https://litellm.jory.dev/v1",
       "api": "anthropic-messages",
-      "apiKey": "{{ onepasswordRead "op://Kubernetes/litellm/LITELLM_OPENCODE_API_KEY" }}",
+      "apiKey": "{{ onepasswordRead "op://Kubernetes/litellm/LITELLM_PI_API_KEY" }}",
       "models": [
         { "id": "MiniMax-M3", "name": "MiniMax M3", "reasoning": true, "contextWindow": 1000000, "maxTokens": 16384 },
         { "id": "MiniMax-M2.7", "name": "MiniMax M2.7", "reasoning": true, "contextWindow": 1000000, "maxTokens": 16384 },
