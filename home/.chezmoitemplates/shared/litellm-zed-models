@@ -1,7 +1,7 @@
           {
             "name": "llama-nvidia",
-            "max_tokens": 131072,
-            "max_output_tokens": 16384,
+            "max_tokens": 140000,
+            "max_output_tokens": 40960,
             "capabilities": { "tools": true, "images": true, "parallel_tool_calls": true, "prompt_cache_key": false, "chat_completions": true, "interleaved_reasoning": false }
           },
           {
