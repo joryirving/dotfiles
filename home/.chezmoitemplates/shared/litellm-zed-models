@@ -37,28 +37,10 @@
             "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
           },
           {
-            "name": "go-gpt-5.6-luna",
-            "max_tokens": 272000,
-            "max_output_tokens": 16384,
-            "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
-          },
-          {
-            "name": "dsv4p",
-            "max_tokens": 1000000,
-            "max_output_tokens": 16384,
-            "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
-          },
-          {
             "name": "MiniMax-M3-chat",
             "max_tokens": 1000000,
             "max_output_tokens": 131072,
             "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": false, "chat_completions": true, "interleaved_reasoning": false }
-          },
-          {
-            "name": "mimo-v2.5-pro",
-            "max_tokens": 262144,
-            "max_output_tokens": 16384,
-            "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
           },
           {
             "name": "mimo-v2.5",
