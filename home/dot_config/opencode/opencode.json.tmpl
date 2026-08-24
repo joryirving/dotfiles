@@ -4,7 +4,7 @@
   , "tool_output": { "max_lines": 800, "max_bytes": 16384 }
 {{- if .personal }}
   , "plugin": [
-    ["@eleboucher/opencode-memini@0.7.19", { "base_url": "https://memini.jory.dev", "namespace": "opencode" }]
+    ["@eleboucher/opencode-memini@0.7.20", { "base_url": "https://memini.jory.dev", "namespace": "opencode" }]
   ]
   , "enabled_providers": [{{ if eq .chezmoi.os "darwin" }}"lmstudio", {{ end }}"litellm-anthropic", "litellm"]
   , "model": "litellm-anthropic/auto"
