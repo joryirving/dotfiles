@@ -108,14 +108,11 @@
          Strong reasoning coordinator plans and delegates via the task tool;
          everyday default stays `auto`. Tab to coordinator for orchestration.
 
-         Routing bias: explorer/fixer-bigctx/oracle (mimo-v2.5 / dsv4f / dsv4p)
-         sit on the Opencode Go sub. That plan is dollar-denominated, NOT flat — $60/mo,
-         $30/wk, $12 per rolling 5h — so per-token price decides which lane is cheap.
-         dsv4f was repriced ~8x (2026-08-16) to $0.22/$0.66 AND given its own $15/mo
-         sub-cap inside the $60, so it is no longer the fan-out lane; explorer moved to
-         mimo-v2.5 ($0.14/$0.28), which is the cheapest Go model and the best fit for
-         recon, the role that needs the least intelligence. dsv4f was also never fast:
-         117s p95 against nvidia's 54s. `nvidia` stays the low-latency lane for small edits and carries
+         Routing bias: no role sits on the Opencode Go sub any more — it is cancelled
+         and lapses 2026-08-28. explorer runs on MiniMax-M3, whose plan is flat rather
+         than dollar-denominated, so the fan-out lane costs nothing at the margin;
+         oracle is glm-5.3. The rest are self-hosted.
+         `nvidia` stays the low-latency lane for small edits and carries
          vision: it serves Qwen3.8-27B at 140k with the projector encoding on CPU.
          The Strix lanes are selectable rather than auto-routed — `self-hosted` is the
          Qwen3.6-35B-A3B heretic build (262k, vision), `nemotron` is the Foreman
