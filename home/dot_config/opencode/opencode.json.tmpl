@@ -115,8 +115,8 @@
          `nvidia` stays the low-latency lane for small edits and carries
          vision: it serves Qwen3.8-27B at 140k with the projector encoding on CPU.
          The Strix lanes are selectable rather than auto-routed — `self-hosted` is the
-         Qwen3.6-35B-A3B heretic build (262k, vision), `nemotron` is the Foreman
-         reviewer's model, and `vision` is the abliterated Qwen3.5-9B on an Intel iGPU
+         Qwen3.6-35B-A3B unsloth build (262k, vision), `llama-reviewer` is the Foreman
+         reviewer's model, and `vision` is the abliterated MiniCPM-V 4.5 on Strix
          for image work that must not refuse.
          Coordinator itself stays on reasoning-pool so the planner is a different family
          than `oracle` — otherwise the second opinion is worthless. */}}
@@ -137,7 +137,7 @@
       "model": "litellm/llama-nvidia"
     },
     "fixer-bigctx": {
-      "description": "Primary bulk coding lane — Qwen3.6-35B-A3B heretic, local on Strix (262k, free, multimodal). Large context for independent implementation attempts. ONE slot: run it singly, concurrent instances just queue.",
+      "description": "Primary bulk coding lane — Qwen3.6-35B-A3B unsloth, local on Strix (262k, free, multimodal). Large context for independent implementation attempts. TWO slots.",
       "mode": "subagent",
       "model": "litellm/llama-strix"
     },

@@ -5,11 +5,23 @@
             "capabilities": { "tools": true, "images": true, "parallel_tool_calls": true, "prompt_cache_key": false, "chat_completions": true, "interleaved_reasoning": false }
           },
           {
+            "name": "llama-nvidia-chat",
+            "max_tokens": 140000,
+            "max_output_tokens": 40960,
+            "capabilities": { "tools": true, "images": true, "parallel_tool_calls": true, "prompt_cache_key": false, "chat_completions": true, "interleaved_reasoning": false }
+          },
+          {
             "name": "llama-strix",
-            "display_name": "Qwen3.6-35B-A3B heretic (Strix)",
+            "display_name": "Qwen3.6-35B-A3B (Strix)",
             "max_tokens": 262144,
             "max_output_tokens": 20480,
             "max_completion_tokens": 20480
+          },
+          {
+            "name": "llama-strix-chat",
+            "max_tokens": 262144,
+            "max_output_tokens": 20480,
+            "capabilities": { "tools": true, "images": true, "parallel_tool_calls": false, "prompt_cache_key": false, "chat_completions": true, "interleaved_reasoning": false }
           },
           {
             "name": "kimi-k2.7",
