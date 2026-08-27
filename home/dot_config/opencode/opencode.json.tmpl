@@ -111,7 +111,7 @@
          Routing bias: no role sits on the Opencode Go sub any more — it is cancelled
          and lapses 2026-08-28. explorer runs on MiniMax-M3, whose plan is flat rather
          than dollar-denominated, so the fan-out lane costs nothing at the margin;
-         oracle is glm-5.3. The rest are self-hosted.
+         oracle is glm-5.3-flash. The rest are self-hosted.
          `nvidia` stays the low-latency lane for small edits and carries
          vision: it serves Qwen3.8-27B at 140k with the projector encoding on CPU.
          The Strix lanes are selectable rather than auto-routed — `self-hosted` is the
@@ -142,9 +142,9 @@
       "model": "litellm/llama-strix"
     },
     "oracle": {
-      "description": "Hard debugging / architecture — GLM-5.3 (1M ctx), the strongest analysis tier available. The ONLY rate-capped lane left (~80 prompts/5h, shared with other consumers): use deliberately, never by default.",
+      "description": "Hard debugging / architecture — GLM-5.3 Flash (1M ctx, multimodal), the strongest analysis tier available. Rate-capped but roomy: ~3x the GLM-5.3 quota on the coding plan, shared with other consumers. Still not the default lane.",
       "mode": "subagent",
-      "model": "litellm/glm-5.3"
+      "model": "litellm/glm-5.3-flash"
     },
     "reviewer": {
       "description": "Independent review — Nemotron 3.5 Lightning 30B-A3B, local on Strix (262k, 2 slots, free). Distinct family from the Qwen coders and the MiniMax recon lane. Second opinions and prose.",

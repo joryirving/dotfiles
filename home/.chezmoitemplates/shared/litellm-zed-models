@@ -48,6 +48,12 @@
             "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": false, "chat_completions": true, "interleaved_reasoning": false }
           },
           {
+            "name": "glm-5.3-flash",
+            "max_tokens": 1000000,
+            "max_output_tokens": 131072,
+            "capabilities": { "tools": true, "images": true, "parallel_tool_calls": false, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
+          },
+          {
             "name": "glm-5.3",
             "max_tokens": 1000000,
             "max_output_tokens": 131072,
