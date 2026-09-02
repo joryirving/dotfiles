@@ -39,13 +39,13 @@
         },
         {
           "id": "llama-nvidia",
-          "name": "Qwen3.8-27B (3090)",
+          "name": "Qwen3.8-27B UD-Q4_K_XL (3090)",
           "input": ["text", "image"],
           "contextWindow": 131072
         },
         {
           "id": "llama-nvidia-chat",
-          "name": "Qwen3.8-27B (3090, non-thinking)",
+          "name": "Qwen3.8-27B UD-Q4_K_XL (3090, non-thinking)",
           "input": ["text", "image"],
           "contextWindow": 131072
         },
@@ -62,14 +62,14 @@
         },
         {
           "id": "llama-strix",
-          "name": "Qwen3.8-Flash-Next (Strix)",
+          "name": "Qwen3.8-Flash-Next UD-IQ4_XS (Strix)",
           "input": ["text", "image"],
           "contextWindow": 262144,
           "maxTokens": 20480
         },
         {
           "id": "llama-strix-chat",
-          "name": "Strix Qwen (non-thinking)",
+          "name": "Qwen3.8-Flash-Next UD-IQ4_XS (Strix, non-thinking)",
           "input": ["text", "image"],
           "contextWindow": 262144
         },
@@ -123,7 +123,7 @@
           "id": "auto",
           "name": "Auto Router",
           "reasoning": true,
-          "contextWindow": 140000,
+          "contextWindow": 131072,
           "maxTokens": 16384
         }
       ]
