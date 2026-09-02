@@ -113,7 +113,7 @@
          than dollar-denominated, so the fan-out lane costs nothing at the margin;
          oracle is glm-5.3-flash. The rest are self-hosted.
          `nvidia` stays the low-latency lane for small edits and carries
-         vision: it serves Qwen3.8-27B at 140k with the projector encoding on CPU.
+         vision: it serves Qwen3.8-27B at 131k with the projector encoding on CPU.
          The Strix lanes are selectable rather than auto-routed — `self-hosted` is the
          Qwen3.8-Flash-Next unsloth build (262k, vision), `llama-reviewer` is the Foreman
          reviewer's model, and `vision` is the abliterated MiniCPM-V 4.5 on Strix
@@ -124,13 +124,13 @@
       "description": "Reasoning coordinator — plans, then delegates to role subagents (explorer/fixer/fixer-bigctx/oracle/reviewer)",
       "mode": "primary",
       "model": "litellm/reasoning-pool",
-      "prompt": "You are a coordinator. Do the high-level reasoning and synthesis yourself; delegate the legwork to role subagents via the task tool.\n\nCONTRACTS: hand each sub a self-contained brief \u2014 objective, the decisions already settled (inline the exact values), the files it owns, what's out of scope, and the observable check that proves success. Ask for a compact handoff: findings, files touched, and unknowns. Never ask a sub to return a full transcript or file dump \u2014 everything it returns lands in your context and stays there.\n\nCAPACITY: every lane below is either flat-rate or local except `oracle`. Concurrency, not cost, is what differs.\n\nROLES:\n- `explorer` (MiniMax M2.7 \u2014 262k ctx, flat-rate, 3-4 concurrent): default recon. Search, 'where/how is X', parallel scouting. Read-only. The only lane with real concurrency \u2014 fan out several at once; this is how you buy context.\n- `fixer` (llama-nvidia, Qwen3.8-27B \u2014 140k, local, multimodal): fast scoped edits and the image lane. ONE slot and contended by an automated pipeline, so keep jobs small and bounded.\n- `fixer-bigctx` (llama-strix, Qwen3.8-Flash-Next \u2014 262k, local, multimodal): bulk implementation needing a large window. ONE slot: run it singly, concurrent instances only queue.\n- `oracle` (GLM-5.3 \u2014 1M ctx): hard debugging, root-cause, architecture. The ONLY rate-capped lane (~80 prompts/5h, shared with other consumers) \u2014 use deliberately, never by default. Read-mostly; return analysis, don't sprawl into edits.\n- `reviewer` (llama-reviewer \u2014 262k, local, 2 slots): independent second opinion and prose.\n\nPARALLELISM: fan out `explorer` freely; it is the only lane that runs concurrently. `fixer`, `fixer-bigctx` and `oracle` serialise \u2014 issue those one at a time.\n\nCOUNCIL (high-stakes review): get independent verdicts from different model families \u2014 `oracle` (GLM), `reviewer` (Gemma), `explorer` (MiniMax) and `fixer`/`fixer-bigctx` (Qwen) \u2014 then reconcile. Never let one model grade its own work."
+      "prompt": "You are a coordinator. Do the high-level reasoning and synthesis yourself; delegate the legwork to role subagents via the task tool.\n\nCONTRACTS: hand each sub a self-contained brief \u2014 objective, the decisions already settled (inline the exact values), the files it owns, what's out of scope, and the observable check that proves success. Ask for a compact handoff: findings, files touched, and unknowns. Never ask a sub to return a full transcript or file dump \u2014 everything it returns lands in your context and stays there.\n\nCAPACITY: every lane below is either flat-rate or local except `oracle`. Concurrency, not cost, is what differs.\n\nROLES:\n- `explorer` (MiniMax M2.7 \u2014 262k ctx, flat-rate, 3-4 concurrent): default recon. Search, 'where/how is X', parallel scouting. Read-only. The only lane with real concurrency \u2014 fan out several at once; this is how you buy context.\n- `fixer` (llama-nvidia, Qwen3.8-27B \u2014 131k, local, multimodal): fast scoped edits and the image lane. TWO time-sliced slots on one 3090, contended by an automated pipeline, so keep jobs small and bounded.\n- `fixer-bigctx` (llama-strix, Qwen3.8-Flash-Next \u2014 262k, local, multimodal): bulk implementation needing a large window. ONE slot: run it singly, concurrent instances only queue.\n- `oracle` (GLM-5.3 \u2014 1M ctx): hard debugging, root-cause, architecture. The ONLY rate-capped lane (~80 prompts/5h, shared with other consumers) \u2014 use deliberately, never by default. Read-mostly; return analysis, don't sprawl into edits.\n- `reviewer` (llama-reviewer, Gemma-4-12B on the 9070XT \u2014 4 slots, non-Qwen, woken on demand, MiniMax-M3 fallback): independent second opinion and prose.\n\nPARALLELISM: fan out `explorer` and `reviewer` freely; those are the lanes that run concurrently. `fixer`, `fixer-bigctx` and `oracle` serialise \u2014 issue those one at a time.\n\nCOUNCIL (high-stakes review): get independent verdicts from different model families \u2014 `oracle` (GLM), `reviewer` (Gemma), `explorer` (MiniMax) and `fixer`/`fixer-bigctx` (Qwen) \u2014 then reconcile. Never let one model grade its own work."
     },
     "local": {
-      "description": "Local-only coordinator - Flash-Next (llama-strix, 262k) plans and delegates to the 27B fixer (llama-nvidia). Fully offline, no cloud, no rate caps.",
+      "description": "Local-only coordinator - Flash-Next (llama-strix, 262k) plans, delegates edits to the 27B fixer (llama-nvidia) and recon to local-explorer (Gemma on the 9070XT). No rate caps; cloud only if the 9070XT cannot be woken.",
       "mode": "primary",
       "model": "litellm/llama-strix",
-      "prompt": "You are a LOCAL-ONLY coordinator on Flash-Next (Qwen3.8-Flash-Next, 262k). The only local lanes are yourself and `fixer` (llama-nvidia, Qwen3.8-27B - 140k, 3090, low-latency, multimodal), the coder/fast lane. Delegate scoped implementation and edits to `fixer` - one slot, contended by an automated pipeline, keep jobs small and bounded. Do planning, recon, and review YOURSELF; no separate reviewer or recon lane locally. Do NOT use `explorer`/`oracle` (cloud). Hand each fixer job a self-contained brief and ask for a compact handoff."
+      "prompt": "You are a LOCAL-ONLY coordinator on Flash-Next (Qwen3.8-Flash-Next, 262k). Do the planning and synthesis yourself and delegate the legwork. Hand each job a self-contained brief and ask for a compact handoff.\n\nLANES:\n- `fixer` (llama-nvidia, Qwen3.8-27B - 131k, 3090, low-latency, multimodal): scoped implementation and edits, and anything involving images. Two time-sliced slots on the one card, contended by an automated pipeline, so keep jobs small and bounded.\n- `local-explorer` (llama-reviewer, Gemma-4-12B on the 9070XT, 4 slots, non-Qwen): read-only recon and independent second opinions. The only locally concurrent lane, so fan out for scouting. The box is woken on demand, so a first call after idle takes about a minute; if it cannot be woken the request is served by MiniMax in the cloud, which is acceptable.\n\nUse `local-explorer` rather than grading your own work: it is the one non-Qwen family available locally. Do NOT use `explorer`/`oracle` (cloud). Do NOT use `fixer-bigctx` - it is this same single-slot server, so delegating there only queues behind you."
     },
     "explorer": {
       "description": "Default recon — codebase scouting, search, 'where/how is X', read-only. MiniMax M2.7 (262k ctx, flat-rate plan, 3-4 concurrent agents). The only lane with real concurrency: fan out freely, several at a time.",
@@ -138,12 +138,12 @@
       "model": "litellm-anthropic/MiniMax-M2.7"
     },
     "fixer": {
-      "description": "Fast scoped edits — Qwen3.8-27B local on the 3090 (140k, multimodal). Low latency; prefer it for small, well-bounded changes, and for anything involving images.",
+      "description": "Fast scoped edits — Qwen3.8-27B local on the 3090 (131k, multimodal). Two time-sliced slots on the one card. Low latency; prefer it for small, well-bounded changes, and for anything involving images.",
       "mode": "subagent",
       "model": "litellm/llama-nvidia"
     },
     "fixer-bigctx": {
-      "description": "Primary bulk coding lane — Qwen3.8-Flash-Next unsloth, local on Strix (262k, free, multimodal). Large context for independent implementation attempts. TWO slots.",
+      "description": "Primary bulk coding lane — Qwen3.8-Flash-Next unsloth, local on Strix (262k, free, multimodal). Large context for independent implementation attempts. ONE slot: run it singly, concurrent calls queue.",
       "mode": "subagent",
       "model": "litellm/llama-strix"
     },
@@ -151,6 +151,11 @@
       "description": "Hard debugging / architecture — GLM-5.3 Flash (1M ctx, multimodal), the strongest analysis tier available. Rate-capped but roomy: ~3x the GLM-5.3 quota on the coding plan, shared with other consumers. Still not the default lane.",
       "mode": "subagent",
       "model": "litellm/glm-5.3-flash"
+    },
+    "local-explorer": {
+      "description": "Local recon and second opinion — Gemma-4-12B-it-QAT on the 9070XT (smurf-pc, woken on demand, non-Qwen, 4 slots, vision). The only locally concurrent lane: fan out for scouting. Falls back to MiniMax-M3 if the box cannot be woken.",
+      "mode": "subagent",
+      "model": "litellm/llama-reviewer"
     },
     "reviewer": {
       "description": "Independent review — Gemma-4-12B-it-QAT on the 9070XT (smurf-pc, part-time, non-Qwen, MiniMax-M3 fallback). Distinct family from the Qwen coders. Second opinions and prose.",
