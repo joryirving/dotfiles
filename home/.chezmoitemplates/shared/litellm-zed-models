@@ -68,6 +68,12 @@
             "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
           },
           {
+            "name": "implementation-pool",
+            "max_tokens": 131072,
+            "max_output_tokens": 16384,
+            "capabilities": { "tools": true, "images": false, "parallel_tool_calls": true, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
+          },
+          {
             "name": "frontier-pool",
             "max_tokens": 272000,
             "max_output_tokens": 16384,
