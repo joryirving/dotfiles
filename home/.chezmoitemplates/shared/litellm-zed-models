@@ -59,7 +59,8 @@
             "max_output_tokens": 131072,
             "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
           },
-          // reasoning-pool: load-balanced. frontier-pool: priority failover sol -> glm-5.3 -> kimi-k3 -> MiniMax-M3-chat. auto: complexity router.
+          // reasoning-pool: load-balanced. frontier-pool: priority failover gpt-6-astra -> kimi-k3 -> glm-5.3 -> dsv4f, no floor.
+          // Declared at Astra's 272k cap, not the 1M of the rungs below it. auto: complexity router.
           {
             "name": "reasoning-pool",
             "max_tokens": 1050000,
@@ -68,7 +69,7 @@
           },
           {
             "name": "frontier-pool",
-            "max_tokens": 1000000,
+            "max_tokens": 272000,
             "max_output_tokens": 16384,
             "capabilities": { "tools": true, "images": true, "parallel_tool_calls": true, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
           },
