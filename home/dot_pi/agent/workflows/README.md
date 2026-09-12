@@ -20,7 +20,7 @@ The same actions are available to the `workflow` tool. Keep tool calls narrow: u
 
 Start it explicitly with `/workflow start deliver-ticket TICKET_ID TASK_TEXT`. The first token
 is a conservative ticket id (`A-Z`, numbers, `.`, `_`, `/`, and `-`); everything after it is
-task context. Task text is passed to the planner/fixer/reviewer as text only. It is never a
+task context. Task text is passed to the planner/coder-local/reviewer as text only. It is never a
 command, check name, branch fragment, or shell expression. Normal prompts never enter this
 profile.
 
@@ -31,8 +31,8 @@ The profile runs this bounded path:
    access;
 2. an `oracle` plan runs read-only in the base checkout;
 3. an interactive approval is required before a per-run branch/worktree is created and the
-   `fixer` receives mutation access;
-4. the fixer, trusted checks, and `reviewer` run in the isolated worktree, with one bounded
+   `coder-local` receives mutation access;
+4. the coder-local, trusted checks, and `reviewer` run in the isolated worktree, with one bounded
    repair round and a non-decreasing blocking-finding guard;
 5. a second approval is required before `gh pr create`, then fixed-argv GitHub stages record
    the PR and observe required checks at the exact head SHA;

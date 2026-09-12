@@ -43,14 +43,6 @@
         "CONTEXT7_API_KEY": "{{ onepasswordRead "op://Kubernetes/context7/ZED_API_KEY" }}",
       },
     },
-    // Local server via Homebrew binary (Zed is macOS-only — see .chezmoiignore).
-    "github": {
-      "command": "/opt/homebrew/lib/node_modules/@modelcontextprotocol/server-github/dist/index.js",
-      "args": [],
-      "env": {
-        "GITHUB_TOKEN": "{{ onepasswordRead "op://Kubernetes/github-miso/GITHUB_TOKEN" }}",
-      },
-    },
     "memini": {
       "url": "https://memini.jory.dev/mcp",
       "headers": { "X-Memini-Namespace": "zed", "Authorization": "Bearer {{ onepasswordRead "op://Kubernetes/memini/MEMINI_API_KEY" }}" },
@@ -58,14 +50,6 @@
     "toolhive": {
       "url": "https://mcp.jory.dev/mcp",
       "headers": { "x-api-key": "{{ onepasswordRead "op://Kubernetes/toolhive/TOOLHIVE_MACBOOK_API_KEY" }}" },
-    },
-    "konflate": {
-      "url": "https://konflate.jory.dev/mcp",
-    },
-    // Local servers via Homebrew binaries (Zed is macOS-only — see .chezmoiignore).
-    "kubectl": {
-      "command": "/opt/homebrew/lib/node_modules/@strowk/mcp-k8s-darwin-arm64/bin/mcp-k8s-go",
-      "args": [],
     },
     "dispatch": {
       "command": "npx",
@@ -144,50 +128,6 @@
       { "provider": "LiteLLM", "model": "glm-5.3", "enable_thinking": false },
     ],
     "model_parameters": [],
-    // Custom profiles to trim MCP context (built-in write/ask/minimal still apply).
-    // tool footprint (defs): kubectl ~23KB, github ~17KB, memory ~10KB, context7 ~5KB,
-    // toolhive ~2KB. toolhive is a router (call_tool/find_tool) that reaches every
-    // other MCP on demand without injecting their schemas.
-    "profiles": {
-      "lean": {
-        "name": "Lean",
-        "enable_all_context_servers": false,
-        "tools": {
-          "copy_path": true, "create_directory": true, "delete_path": true,
-          "diagnostics": true, "edit_file": true, "fetch": true, "find_path": true,
-          "grep": true, "list_directory": true, "move_path": true, "read_file": true,
-          "terminal": true, "thinking": true
-        },
-        "context_servers": {
-          "toolhive": { "tools": { "call_tool": true, "find_tool": true } }
-        }
-      },
-      "gitops": {
-        "name": "GitOps",
-        "enable_all_context_servers": false,
-        "tools": {
-          "copy_path": true, "create_directory": true, "delete_path": true,
-          "diagnostics": true, "edit_file": true, "fetch": true, "find_path": true,
-          "grep": true, "list_directory": true, "move_path": true, "read_file": true,
-          "terminal": true, "thinking": true
-        },
-        "context_servers": {
-          "kubectl": { "tools": {
-            "cleanup": true, "kubectl_get": true, "kubectl_describe": true,
-            "kubectl_apply": true, "kubectl_delete": true, "kubectl_create": true,
-            "kubectl_logs": true, "kubectl_scale": true, "kubectl_patch": true,
-            "kubectl_rollout": true, "kubectl_context": true, "kubectl_reconnect": true,
-            "explain_resource": true, "install_helm_chart": true, "upgrade_helm_chart": true,
-            "uninstall_helm_chart": true, "node_management": true, "port_forward": true,
-            "stop_port_forward": true, "exec_in_pod": true, "list_api_resources": true,
-            "kubectl_generic": true, "ping": true
-          } },
-          "konflate": { "tools": {
-            "list_pull_requests": true, "get_pr_summary": true, "get_pr_diff": true
-          } }
-        }
-      }
-    },
   },
   "file_types": {
     "json5": ["*.json5"],

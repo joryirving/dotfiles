@@ -32,7 +32,7 @@
       "handoffFrom": [
         "plan"
       ],
-      "message": "Review the read-only plan before the fixer receives an isolated worktree. Approve only if the ticket scope is correct:\n{handoff}"
+      "message": "Review the read-only plan before the coder-local receives an isolated worktree. Approve only if the ticket scope is correct:\n{handoff}"
     },
     {
       "id": "worktree",
@@ -42,7 +42,7 @@
     {
       "id": "implement",
       "type": "delegate",
-      "agent": "fixer",
+      "agent": "coder-local",
       "mutation": true,
       "handoffFrom": [
         "plan"
@@ -86,7 +86,7 @@
         {
           "id": "repair-fix",
           "type": "delegate",
-          "agent": "fixer",
+          "agent": "coder-local",
           "mutation": true,
           "handoffFrom": [
             "review",

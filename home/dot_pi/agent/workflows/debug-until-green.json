@@ -18,7 +18,7 @@
         {
           "id": "fix",
           "type": "delegate",
-          "agent": "fixer",
+          "agent": "coder-local",
           "mutation": true,
           "handoffFrom": ["diagnose", "check"],
           "task": "Apply one narrowly scoped fix for the diagnosis. Preserve unrelated changes and stop after this bounded pass.\n{handoff}",
