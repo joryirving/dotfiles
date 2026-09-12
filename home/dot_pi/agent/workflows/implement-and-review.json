@@ -19,7 +19,7 @@
     {
       "id": "implement",
       "type": "delegate",
-      "agent": "fixer",
+      "agent": "coder-local",
       "mutation": true,
       "handoffFrom": ["plan"],
       "task": "Implement the approved request. Keep the change scoped, preserve unrelated edits, and report validation evidence. Request:\n{input}\nPlan:\n{handoff}",
@@ -52,7 +52,7 @@
         {
           "id": "repair-fix",
           "type": "delegate",
-          "agent": "fixer",
+          "agent": "coder-local",
           "mutation": true,
           "handoffFrom": ["check", "review"],
           "task": "Repair only the concrete failures from the check/review handoff. Do not broaden scope.\n{handoff}",

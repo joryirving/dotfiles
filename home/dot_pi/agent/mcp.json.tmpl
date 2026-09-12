@@ -13,6 +13,15 @@
       },
       "lifecycle": "lazy"
     },
+    "dispatch": {
+      "command": "npx",
+      "args": ["tsx", "{{ .chezmoi.homeDir }}/git/dispatch/src/mcp/server.ts"],
+      "env": {
+        "DISPATCH_URL": "https://dispatch.jory.dev",
+        "DISPATCH_AGENT_TOKEN": "{{ onepasswordRead "op://Kubernetes/dispatch/DISPATCH_AGENT_TOKEN" }}"
+      },
+      "lifecycle": "lazy"
+    },
     "context7": {
       "command": "npx",
       "args": ["-y", "@upstash/context7-mcp"],

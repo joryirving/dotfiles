@@ -1,5 +1,5 @@
 ---
-name: local-explorer
+name: explorer-local
 description: Local read-only reconnaissance and second opinions; the non-Qwen lane.
 tools: read, grep, find, ls, bash
 model: jory-litellm/gemma-4-12b-it-qat
