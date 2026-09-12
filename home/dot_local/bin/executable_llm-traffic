@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# llm-traffic — ad-hoc "what is consuming what model right now" from litellm metrics.
+# Usage: llm-traffic [model-substring]   e.g. `llm-traffic glimmer`
+# No auth needed; queries prometheus.jory.dev directly (browser UA for Cloudflare).
+set -euo pipefail
+PROM="${PROM_URL:-https://prometheus.jory.dev}"
+WIN="${WIN:-2m}"
+FILTER="${1:-}"
+UA='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+q='sum by (api_key_alias, requested_model) (rate(litellm_requests_metric_total['"$WIN"'])) * 60'
+curl -s -H "User-Agent: $UA" -G "$PROM/api/v1/query" --data-urlencode "query=$q" \
+ | FILTER="$FILTER" WIN="$WIN" python3 -c '
+import sys,json,os
+d=json.load(sys.stdin).get("data",{}).get("result",[])
+f=os.environ.get("FILTER","").lower()
+rows=[]
+for r in d:
+    c=r["metric"].get("api_key_alias","?"); m=r["metric"].get("requested_model","?"); v=float(r["value"][1])
+    if v<0.05: continue
+    if f and f not in m.lower() and f not in c.lower(): continue
+    rows.append((c,m,v))
+if not rows:
+    print(f"(no traffic in the last {os.environ.get(\"WIN\")}"+(f", filter={f!r}" if f else "")+")"); sys.exit()
+w=max(len(c) for c,_,_ in rows)+2
+print(f"{\"CONSUMER\".ljust(w)}{\"MODEL\".ljust(28)}req/min")
+for c,m,v in sorted(rows,key=lambda x:-x[2]):
+    print(f"{c.ljust(w)}{m.ljust(28)}{v:5.1f}")
+'
