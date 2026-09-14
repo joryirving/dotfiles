@@ -1,5 +1,5 @@
-        "qwen3.8-flash-next": { "name": "Qwen3.8-Flash-Next UD-IQ4_XS (Strix)", "limit": { "context": 150000, "output": 20480 } },
-        "qwen3.8-flash-next-chat": { "name": "Qwen3.8-Flash-Next UD-IQ4_XS non-thinking (Strix)", "limit": { "context": 150000, "output": 20480 } },
+        "qwen3.8-flash-next": { "name": "Qwen3.8-Flash-Next IQ4_NL (Strix)", "limit": { "context": 150000, "output": 20480 } },
+        "qwen3.8-flash-next-chat": { "name": "Qwen3.8-Flash-Next IQ4_NL non-thinking (Strix)", "limit": { "context": 150000, "output": 20480 } },
         "qwen3.8-27b": { "name": "Qwen3.8-27B UD-Q4_K_XL (3090)", "limit": { "context": 150000, "output": 40960 } },
         "qwen3.8-27b-chat": { "name": "Qwen3.8-27B UD-Q4_K_XL non-thinking (3090)", "limit": { "context": 150000, "output": 40960 } },
         "gemma-4-12b-it-qat": { "name": "Gemma-4-12B-it-QAT (9070XT)", "limit": { "context": 200000, "output": 20480 } },
