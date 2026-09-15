@@ -11,17 +11,17 @@
             "capabilities": { "tools": true, "images": false, "parallel_tool_calls": true, "prompt_cache_key": false, "chat_completions": true, "interleaved_reasoning": false }
           },
           {
-            "name": "qwen3.8-flash-next",
-            "display_name": "Qwen3.8-Flash-Next (Strix)",
+            "name": "glm-5.3-flash-local",
+            "display_name": "GLM-5.3-Flash Q2 (Strix ds4)",
             "max_tokens": 262144,
-            "max_output_tokens": 20480,
-            "max_completion_tokens": 20480
+            "max_output_tokens": 16384,
+            "max_completion_tokens": 16384
           },
           {
-            "name": "qwen3.8-flash-next-chat",
+            "name": "glm-5.3-flash-local-chat",
             "max_tokens": 262144,
-            "max_output_tokens": 20480,
-            "capabilities": { "tools": true, "images": true, "parallel_tool_calls": false, "prompt_cache_key": false, "chat_completions": true, "interleaved_reasoning": false }
+            "max_output_tokens": 16384,
+            "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": false, "chat_completions": true, "interleaved_reasoning": false }
           },
           {
             "name": "kimi-k2.7",
