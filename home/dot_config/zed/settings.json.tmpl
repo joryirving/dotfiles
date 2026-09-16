@@ -115,7 +115,6 @@
     "default_model": {
       "provider": "anthropic",
       "model": "auto",
-      "enable_thinking": false,
     },
     // Zed has ONE global subagent model (no per-task choice like opencode), so it
     // can't fan out to a cheap Go lane the way opencode's `explorer` does. Kept on
@@ -124,22 +123,20 @@
     "subagent_model": {
       "provider": "LiteLLM",
       "model": "qwen3.8-27b",
-      "enable_thinking": false,
     },
     // Commit-message path (Zed routes this around the agent panel; AGENTS.md covers the rest).
     "commit_message_instructions": "Conventional Commits: `type(scope): imperative summary`, lowercase, ~50 char subject. Add a body only if the why isn't obvious from the diff — a few tight lines, no walls, no filler adjectives, don't restate the diff.",
     "sidebar_side": "right",
     "dock": "right",
     "favorite_models": [
-      { "provider": "LiteLLM", "model": "frontier-pool", "enable_thinking": false },
-      { "provider": "LiteLLM", "model": "reasoning-pool", "enable_thinking": false },
-      { "provider": "LiteLLM", "model": "qwen3.8-flash-next", "enable_thinking": false },
-      { "provider": "LiteLLM", "model": "qwen3.8-flash-next", "enable_thinking": false },
-      { "provider": "anthropic", "model": "MiniMax-M3", "enable_thinking": false },
-      { "provider": "LiteLLM", "model": "dsv4f", "enable_thinking": false },
-      { "provider": "LiteLLM", "model": "dsv4.1f", "enable_thinking": false },
-      { "provider": "LiteLLM", "model": "glm-5.3-flash", "enable_thinking": false },
-      { "provider": "LiteLLM", "model": "glm-5.3", "enable_thinking": false },
+      { "provider": "LiteLLM", "model": "frontier-pool" },
+      { "provider": "LiteLLM", "model": "reasoning-pool" },
+      { "provider": "LiteLLM", "model": "qwen3.8-flash-next" },
+      { "provider": "anthropic", "model": "MiniMax-M3" },
+      { "provider": "LiteLLM", "model": "dsv4f" },
+      { "provider": "LiteLLM", "model": "dsv4.1f" },
+      { "provider": "LiteLLM", "model": "glm-5.3-flash" },
+      { "provider": "LiteLLM", "model": "glm-5.3" },
     ],
     "model_parameters": [],
   },
