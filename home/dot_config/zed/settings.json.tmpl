@@ -100,6 +100,18 @@
 {{ template "shared/litellm-zed-anthropic" . }},
   },
   "agent": {
+    // No permission prompts: allow tool calls by default. Zed still applies its
+    // built-in security rules and any always_deny patterns on top of this.
+    "tool_permissions": {
+      "default": "allow",
+    },
+    // Explicit rather than implicit (this is the shipped default since v1.17.2):
+    // summarize earlier messages at 90% of the window instead of dying at the
+    // limit. It cannot rescue a single turn that thinks past the window.
+    "auto_compact": {
+      "enabled": true,
+      "threshold": "90%",
+    },
     "default_model": {
       "provider": "anthropic",
       "model": "auto",
