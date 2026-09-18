@@ -16,7 +16,7 @@
         {
           "name": "auto",
           "display_name": "Auto (router)",
-          "max_tokens": 262144,
+          "max_tokens": 125000,
           "max_output_tokens": 16384
         }
       ]

@@ -1,6 +1,5 @@
         "qwen3.8-flash-next-chat": { "name": "Qwen3.8-Flash-Next non-thinking (Strix)", "limit": { "context": 262144, "output": 16384 } },
         "qwen3.8-flash-next": { "name": "Qwen3.8-Flash-Next IQ4_NL (Strix ROCm, vision)", "limit": { "context": 262144, "output": 16384 } },
-        "gemma-4-e4b": { "name": "Gemma-4-E4B-it-QAT (Strix, vision)", "limit": { "context": 32768, "output": 8192 } },
         "qwen3.8-27b": { "name": "Qwen3.8-27B W4A16 (3090 vLLM)", "limit": { "context": 163840, "output": 40960 } },
         "qwen3.8-27b-chat": { "name": "Qwen3.8-27B W4A16 non-thinking (3090 vLLM)", "limit": { "context": 163840, "output": 40960 } },
         "gemma-4-12b-it-qat": { "name": "Gemma-4-12B-it-QAT (9070XT)", "limit": { "context": 200000, "output": 20480 } },
@@ -13,7 +12,7 @@
         "glm-5.3-flash": { "name": "GLM 5.3 Flash", "limit": { "context": 1000000, "output": 131072 } },
         "glm-5.3": { "name": "GLM 5.3", "limit": { "context": 1000000, "output": 131072 } },
         {{/* reasoning-pool: load-balanced. frontier-pool: priority failover gpt-6-astra->kimi-k3->glm-5.3->dsv4f, no floor. Declared at Astra's 272k cap, not the 1M of the rungs below. auto: complexity router. */}}
-        "reasoning-pool": { "name": "Reasoning Pool", "limit": { "context": 1050000, "output": 16384 } },
+        "reasoning-pool": { "name": "Reasoning Pool", "limit": { "context": 1000000, "output": 16384 } },
         "frontier-pool": { "name": "Frontier Pool", "limit": { "context": 272000, "output": 16384 } },
         {{/* implementation-pool: luna(high)->qwen3.8-27b->MiniMax-M2.7. Declared at the smallest rung it can land on (qwen3.8-27b, 160k of its 192k, leaving KV pool headroom), not Luna's 1.05M. */}}
         "implementation-pool": { "name": "Implementation Pool", "limit": { "context": 163840, "output": 16384 } },

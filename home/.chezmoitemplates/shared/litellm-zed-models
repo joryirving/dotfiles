@@ -1,12 +1,12 @@
           {
             "name": "qwen3.8-27b",
-            "max_tokens": 131072,
+            "max_tokens": 163840,
             "max_output_tokens": 40960,
             "capabilities": { "tools": true, "images": false, "parallel_tool_calls": true, "prompt_cache_key": false, "chat_completions": true, "interleaved_reasoning": false }
           },
           {
             "name": "qwen3.8-27b-chat",
-            "max_tokens": 131072,
+            "max_tokens": 163840,
             "max_output_tokens": 40960,
             "capabilities": { "tools": true, "images": false, "parallel_tool_calls": true, "prompt_cache_key": false, "chat_completions": true, "interleaved_reasoning": false }
           },
@@ -69,13 +69,13 @@
           // Declared at Astra's 272k cap, not the 1M of the rungs below it. auto: complexity router.
           {
             "name": "reasoning-pool",
-            "max_tokens": 1050000,
+            "max_tokens": 1000000,
             "max_output_tokens": 16384,
             "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
           },
           {
             "name": "implementation-pool",
-            "max_tokens": 131072,
+            "max_tokens": 163840,
             "max_output_tokens": 16384,
             "capabilities": { "tools": true, "images": false, "parallel_tool_calls": true, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
           },
@@ -87,7 +87,7 @@
           },
           {
             "name": "auto",
-            "max_tokens": 125000,
+            "max_tokens": 131072,
             "max_output_tokens": 16384,
             "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": false, "chat_completions": true, "interleaved_reasoning": false }
           }
