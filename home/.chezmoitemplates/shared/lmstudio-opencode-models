@@ -1,0 +1,23 @@
+{{/* LM Studio's catalog is machine-local and changes whenever a model is pulled
+     or removed, so it is generated at render time from the live server instead
+     of being curated in git. opencode never queries the provider itself: it
+     merges this block with models.dev's static lmstudio catalog, so a stale
+     hand-written list silently offers models that no longer resolve.
+
+     /api/v0/models is LM Studio's native endpoint — unlike the OpenAI-compatible
+     /v1/models it reports type and max_context_length, which is what lets us drop
+     embedding models and emit real context limits.
+
+     Every failure path has to exit 0 and print nothing: an error here fails the
+     whole opencode.json render, not just this provider. Emitting nothing leaves
+     "models": {} and the models.dev entries still resolve. */}}
+{{- output "bash" "-c" `command -v jq >/dev/null 2>&1 || exit 0
+curl -sf --max-time 2 http://localhost:1234/api/v0/models 2>/dev/null \
+| jq -r '[ .data[]
+    | select(.type != "embeddings")
+    | (.max_context_length // 32768) as $c
+    | "        " + (.id|tojson) + ": { \"name\": "
+      + (((.id|split("/")|last) + (if .type=="vlm" then " (vision)" else "" end))|tojson)
+      + ", \"limit\": { \"context\": " + ($c|tostring)
+      + ", \"output\": " + ([16384,$c]|min|tostring) + " } }"
+  ] | join(",\n")' 2>/dev/null || true` | trimSuffix "\n" -}}

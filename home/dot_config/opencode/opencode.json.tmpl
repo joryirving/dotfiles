@@ -18,8 +18,7 @@
         "baseURL": "http://localhost:1234/v1"
       },
       "models": {
-        "qwen3.6-35b-a3b": { "name": "Qwen3.6 35B-A3B" },
-        "gemma-4-26b-a4b-it-qat": { "name": "Gemma 4 26B" }
+{{ includeTemplate "shared/lmstudio-opencode-models" . }}
       }
     },
     {{- end }}
