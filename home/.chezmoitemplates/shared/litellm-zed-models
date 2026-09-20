@@ -1,12 +1,12 @@
           {
             "name": "qwen3.8-27b",
-            "max_tokens": 163840,
+            "max_tokens": 147456,
             "max_output_tokens": 40960,
             "capabilities": { "tools": true, "images": false, "parallel_tool_calls": true, "prompt_cache_key": false, "chat_completions": true, "interleaved_reasoning": false }
           },
           {
             "name": "qwen3.8-27b-chat",
-            "max_tokens": 163840,
+            "max_tokens": 147456,
             "max_output_tokens": 40960,
             "capabilities": { "tools": true, "images": false, "parallel_tool_calls": true, "prompt_cache_key": false, "chat_completions": true, "interleaved_reasoning": false }
           },
@@ -75,7 +75,7 @@
           },
           {
             "name": "implementation-pool",
-            "max_tokens": 163840,
+            "max_tokens": 147456,
             "max_output_tokens": 16384,
             "capabilities": { "tools": true, "images": false, "parallel_tool_calls": true, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
           },
