@@ -5,7 +5,6 @@ experimental = true
 "aqua:helmfile/helmfile" = "latest"
 "aqua:fluxcd/flux2" = "latest"
 "aqua:go-task/task" = "latest"
-"aqua:kubernetes-sigs/krew" = "latest"
 "aqua:cilium/cilium-cli" = "latest"
 "aqua:siderolabs/talos" = "latest"
 "aqua:yannh/kubeconform" = "latest"
@@ -14,5 +13,8 @@ experimental = true
 "aqua:mitsuhiko/minijinja" = "latest"
 {{- if eq .chezmoi.os "darwin" }}
 "npm:oxfmt" = "latest"  # JS/TS formatter (macOS only; unavailable on RPi)
+{{- if .personal }}
+"github:nklmilojevic/sofka" = "latest"  # Rust k9s alternative (personal mac only)
+{{- end }}
 {{- end }}
 "uv" = "latest"         # provides uvx, used by the grafana MCP (uvx mcp-grafana)
