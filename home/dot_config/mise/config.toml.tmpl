@@ -14,5 +14,8 @@ experimental = true
 "aqua:mitsuhiko/minijinja" = "latest"
 {{- if eq .chezmoi.os "darwin" }}
 "npm:oxfmt" = "latest"  # JS/TS formatter (macOS only; unavailable on RPi)
+{{- if .personal }}
+"github:nklmilojevic/sofka" = "latest"  # Rust k9s alternative (personal mac only)
+{{- end }}
 {{- end }}
 "uv" = "latest"         # provides uvx, used by the grafana MCP (uvx mcp-grafana)
