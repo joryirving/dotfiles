@@ -1,6 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json"
-  , "compaction": { "auto": true, "prune": true, "preserve_recent_tokens": 20000, "reserved": 16384 }
+  , "compaction": { "auto": true, "keep": { "tokens": 20000 }, "buffer": 16384 }
   , "tool_output": { "max_lines": 800, "max_bytes": 16384 }
 {{- if .personal }}
   , "plugins": [
