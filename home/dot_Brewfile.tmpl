@@ -8,7 +8,7 @@
 #   os == darwin    → both macs, then split work vs personal
 #   else (linux)    → rpi5 (always personal — no work linux)
 #
-# Tool overlap is deliberately avoided: helmfile/krew/kustomize/stern/uv/etc.
+# Tool overlap is deliberately avoided: helmfile/kustomize/stern/uv/etc.
 # and language toolchains (go/rust/python) are managed by mise, not brew.
 # =============================================================================
 
@@ -21,6 +21,7 @@ brew "gh"
 brew "helm"
 brew "jq"
 brew "k9s"
+brew "krew"  # brew ships kubectl-krew; mise/aqua only ships krew
 brew "kubecolor"
 brew "starship"
 brew "viddy"
