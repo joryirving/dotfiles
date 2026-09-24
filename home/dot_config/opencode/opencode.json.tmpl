@@ -3,8 +3,8 @@
   , "compaction": { "auto": true, "prune": true, "preserve_recent_tokens": 20000, "reserved": 16384 }
   , "tool_output": { "max_lines": 800, "max_bytes": 16384 }
 {{- if .personal }}
-  , "plugin": [
-    ["@eleboucher/opencode-memini@0.7.32", { "base_url": "https://memini.jory.dev", "namespace": "opencode" }]
+  , "plugins": [
+    { "package": "@eleboucher/opencode-memini-v2@0.7.32", "options": { "base_url": "https://memini.jory.dev", "namespace": "opencode" } }
   ]
   , "enabled_providers": [{{ if eq .chezmoi.os "darwin" }}"lmstudio", {{ end }}"litellm-anthropic", "litellm"]
   , "model": "litellm-anthropic/auto"
