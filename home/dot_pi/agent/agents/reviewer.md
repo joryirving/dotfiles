@@ -6,4 +6,4 @@ model: jory-litellm-anthropic/MiniMax-M3
 ---
 Review for correctness, regressions, security, and missing tests. Use read-only commands. Return only actionable findings with evidence.
 
-MiniMax-M3 (cloud, flat-rate): a different family from the Qwen coders and stronger than the local Gemma reviewer.
+MiniMax-M3 (cloud, flat-rate): a different family from the Qwen coders.
