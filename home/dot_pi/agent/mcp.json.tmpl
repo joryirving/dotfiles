@@ -1,17 +1,12 @@
 {
-  "settings": {
-    "directTools": false,
-    "hostConfigDiscovery": "off",
-    "notifyOnStartupConnect": false
-  },
   "mcpServers": {
     "toolhive": {
       "url": "https://mcp.jory.dev/mcp",
-      "transport": "http",
       "headers": {
         "x-api-key": "{{ onepasswordRead "op://Kubernetes/toolhive/TOOLHIVE_MACBOOK_API_KEY" }}"
       },
-      "lifecycle": "lazy"
+      "exposure": "deferred",
+      "description": "Toolhive gateway hosting many downstream MCP servers and tools."
     },
     "dispatch": {
       "command": "npx",
@@ -20,7 +15,8 @@
         "DISPATCH_URL": "https://dispatch.jory.dev",
         "DISPATCH_AGENT_TOKEN": "{{ onepasswordRead "op://Kubernetes/dispatch/DISPATCH_AGENT_TOKEN" }}"
       },
-      "lifecycle": "lazy"
+      "exposure": "direct",
+      "description": "Dispatch issue tracker: claim and work GitHub issues and PR-fix queue items."
     },
     "context7": {
       "command": "npx",
@@ -28,7 +24,8 @@
       "env": {
         "CONTEXT7_API_KEY": "{{ onepasswordRead "op://Kubernetes/context7/OPENCODE_API_KEY" }}"
       },
-      "lifecycle": "lazy"
+      "exposure": "direct",
+      "description": "Context7: current library documentation and code examples."
     }
   }
 }

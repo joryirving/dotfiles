@@ -120,7 +120,10 @@
     },
     // Commit-message path (Zed routes this around the agent panel; AGENTS.md covers the rest).
     "commit_message_instructions": "Conventional Commits: `type(scope): imperative summary`, lowercase, ~50 char subject. Add a body only if the why isn't obvious from the diff — a few tight lines, no walls, no filler adjectives, don't restate the diff.",
-    "sidebar_side": "right",
+    // Zed 1.23 migrated `sidebar_side` (flat string) to `threads_sidebar.position`.
+    "threads_sidebar": {
+      "position": "right",
+    },
     "dock": "right",
     "favorite_models": [
       { "provider": "LiteLLM", "model": "frontier-pool" },
