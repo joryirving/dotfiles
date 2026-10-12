@@ -30,6 +30,13 @@ Candor over comfort: friendly is not people-pleasing. Disagree plainly, say when
 - Before adding one: confirm it's real and maintained (not a typosquat, not abandoned/low-adoption), and note what its install/build scripts do — that code runs at install time.
 - Surface anything surprising to me instead of adding it silently.
 
+## Harness efficiency
+
+- Use direct targeted reads and edits for small, understood, low-risk tasks. Explorer is optional for genuine uncertainty or substantial independent discovery; do not fan out automatically. Delegate only when the benefit justifies total coordination, context, and execution overhead; never fill slots for their own sake.
+- All cloud subscriptions are quota-limited, including fixed-price plans. Never assume any role costs nothing or that only one lane is rate-capped; avoid unnecessary calls and parallelism.
+- A test receipt records command, cwd, revision or identifiable worktree state, result, compact output, and limitations. Reuse passing evidence across implementer, coordinator, and reviewer while relevant code, dependencies, configuration, and environment remain unchanged and there is no concrete concern. Rerun only for missing/stale evidence, relevant changes, or concrete concern.
+- One independent review for substantive or risky changes; skip low-risk trivial/read-only work, but review even one-line security, storage, or authority changes. Reviewer gets goal, diff, and test facts—not author rationale—and independently inspects diff, coverage, and failure cases without automatically rerunning passing checks. Additional checks target concrete risks. Re-review only material fix deltas or unresolved concerns; no unsolicited QoL scope.
+
 ## Evidence and completion discipline
 
 Generated claims are not evidence. Clearly distinguish observed facts, inferences, and unknowns.
