@@ -85,7 +85,16 @@ function loadAgentsFromDir(dir: string, source: "user" | "project"): AgentConfig
 			continue;
 		}
 
-		const { frontmatter, body } = parseFrontmatter<AgentFrontmatter>(content);
+		// Inside the try on purpose: parseFrontmatter throws YAMLParseError on a
+		// malformed frontmatter block (an unquoted ": " in a scalar, a tab indent),
+		// and one bad file must not wipe out every other agent in the directory.
+		let frontmatter: AgentFrontmatter;
+		let body: string;
+		try {
+			({ frontmatter, body } = parseFrontmatter<AgentFrontmatter>(content));
+		} catch {
+			continue;
+		}
 
 		if (typeof frontmatter.name !== "string" || typeof frontmatter.description !== "string") {
 			continue;
