@@ -28,7 +28,7 @@ import {
 } from "@earendil-works/pi-coding-agent";
 import { Container, Markdown, Spacer, Text } from "@earendil-works/pi-tui";
 import { Type } from "typebox";
-import { type AgentConfig, type AgentScope, discoverAgents } from "./agents.ts";
+import { type AgentConfig, type AgentScope, discoverAgents, formatAgentList } from "./agents.ts";
 
 const MAX_PARALLEL_TASKS = 8;
 const MAX_CONCURRENCY = 4;
@@ -469,12 +469,28 @@ const SubagentParams = Type.Object({
 });
 
 export default function (pi: ExtensionAPI) {
+	// Surface the user-scope roster in the tool description. Without it the only
+	// place agent names ever appear is the "Unknown agent" error string, so a
+	// coordinator has to guess from its system prompt or burn a call to discover
+	// the menu — which made it reach for whichever names were cross-referenced
+	// most often rather than whichever lane was meant to be the default.
+	// Computed once: the user agent dir is fixed for the process. Guarded so a
+	// bad agent file can never take down tool registration.
+	let userRoster = { text: "none", remaining: 0 };
+	try {
+		userRoster = formatAgentList(discoverAgents(process.cwd(), "user").agents, 32);
+	} catch {
+		/* fall back to the error-message roster, as before */
+	}
+	const rosterSuffix = userRoster.remaining > 0 ? ` (+${userRoster.remaining} more)` : "";
+
 	pi.registerTool({
 		name: "subagent",
 		label: "Subagent",
 		description: [
 			"Delegate tasks to specialized subagents with isolated context.",
 			"Modes: single (agent + task), parallel (tasks array), chain (sequential with {previous} placeholder).",
+			`Available agents: ${userRoster.text}${rosterSuffix}.`,
 			`Default agent scope is "user" (from ${path.join(getAgentDir(), "agents")}).`,
 			`To enable project-local agents in ${CONFIG_DIR_NAME}/agents, set agentScope: "both" (or "project").`,
 		].join(" "),

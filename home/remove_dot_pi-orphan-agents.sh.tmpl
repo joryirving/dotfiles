@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# =============================================================================
+# Remove stale pi agent definitions that live in ~/.pi/agent/agents but are not
+# tracked in dotfiles. Pi's agent discovery is a raw readdir of that directory,
+# so an unmanaged file is loaded with the same weight as a managed one and shows
+# up in the subagent roster forever.
+#
+# These were hand-tuning leftovers from before the role realign. Two of them
+# (`fixer.md`, `explorer-local.md`) carry descriptions byte-identical to a
+# managed agent, which made the coding and recon lanes ambiguous to pick.
+#
+# Paths are listed explicitly — no globs — so a newly added agent can never be
+# caught by this. If you delete one of these roles for real, add it to dotfiles
+# and drop it from this list in the same commit. Non-fatal: a missing file is
+# the expected steady state.
+# =============================================================================
+set -uo pipefail
+
+agents_dir="{{ .chezmoi.homeDir }}/.pi/agent/agents"
+
+stale=(
+  "agentic-local-flashnext.md"  # retired skirk-era alternate; agentic-local is already Flash-Next
+  "explorer-local.md"           # byte-identical to local-explorer.md
+  "fixer.md"                    # byte-identical description to coder-local.md
+  "fixer-bigctx.md"             # llama-strix lane, retired
+  "local-explorer.md"           # duplicate of explorer-local.md
+  "local-reviewer.md"           # "optional second opinion" competing with the managed reviewer
+)
+
+for agent in "${stale[@]}"; do
+  target="${agents_dir}/${agent}"
+  if [ -e "$target" ]; then
+    rm -f "$target"
+    echo "[INFO] removed stale pi agent: ${agents_dir}/${agent}" >&2
+  fi
+done
