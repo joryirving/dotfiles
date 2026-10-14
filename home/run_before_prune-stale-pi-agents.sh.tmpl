@@ -9,10 +9,14 @@
 # (`fixer.md`, `explorer-local.md`) carry descriptions byte-identical to a
 # managed agent, which made the coding and recon lanes ambiguous to pick.
 #
-# Paths are listed explicitly — no globs — so a newly added agent can never be
+# Paths are listed explicitly - no globs - so a newly added agent can never be
 # caught by this. If you delete one of these roles for real, add it to dotfiles
 # and drop it from this list in the same commit. Non-fatal: a missing file is
 # the expected steady state.
+#
+# Must be named run_before_*, not remove_*. chezmoi's `remove_` attribute is a
+# target type, not a script hook: the body is never executed, the file is just
+# an assertion that the target is absent.
 # =============================================================================
 set -uo pipefail
 
