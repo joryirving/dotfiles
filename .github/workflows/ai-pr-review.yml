@@ -67,6 +67,8 @@ jobs:
           ci-timeout-sec: "1200"
           tool-allowed-gh-api-repos: "*"
           standards-file-candidates: ".github/ai-review-rules.md"
+          repository-skills: "true"
+          review-verbosity: concise
           claim-falsification: "true"
           publish-mode: review_verdict
           allow-approve: "true"
