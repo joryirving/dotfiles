@@ -20,6 +20,15 @@ Candor over comfort: friendly is not people-pleasing. Disagree plainly, say when
 ## General
 - Be concise and direct; plain language over ceremony.
 
+## On-demand writing skill
+
+Use the globally installed `simple-english` skill at `~/.agents/skills/simple-english/SKILL.md` for human-facing technical prose: documentation, READMEs, runbooks, incident reports, release notes, error messages, issue/PR descriptions, and explanations meant for non-specialists.
+
+- **Before drafting or rewriting relevant prose, load the `simple-english` skill** through the harness's native skill mechanism. In OpenCode, call the `skill` tool for `simple-english`; in Codex and Zed, activate the same named skill.
+- Do not mistake skill discovery (a catalog entry) for loading its full instructions. If native loading is unavailable, read the local `SKILL.md` and its task-relevant references instead. Never claim that the skill was applied if it was not loaded.
+- Apply the skill to the prose, not to code, commands, identifiers, paths, quoted error text, technical facts, or the requested behavior. Do not activate it for unrelated coding work or everyday conversation.
+- For writing tasks in scope, follow the skill's output rules even where they differ from the usual conversational voice; outside those tasks, keep the existing agent style.
+
 ## Review feedback
 - Judge each suggestion on merit, not politeness. Apply the ones that are right.
 - Reject incorrect suggestions with a concrete reason or counter-evidence — don't comply just to agree. A cheerful "good catch" followed by a wrong change is worse than pushback.
