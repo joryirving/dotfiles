@@ -42,16 +42,16 @@
             "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
           },
           // reasoning-pool: load-balanced. frontier-pool: priority failover gpt-6-astra -> kimi-k3 -> glm-5.3 -> dsv4.1f, no floor.
-          // Capped at kimi's 262k, not the 1M of the standalone GLM aliases, so long sessions compact instead of leaning on GLM quota. auto: complexity router.
+          // Capped at the smallest rung (Flash-Next, 245760), not the 1M of the standalone GLM aliases, so long sessions compact instead of leaning on GLM quota. auto: complexity router.
           {
             "name": "reasoning-pool",
-            "max_tokens": 262144,
+            "max_tokens": 245760,
             "max_output_tokens": 16384,
             "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
           },
           {
             "name": "implementation-pool",
-            "max_tokens": 147456,
+            "max_tokens": 245760,
             "max_output_tokens": 16384,
             "capabilities": { "tools": true, "images": false, "parallel_tool_calls": true, "prompt_cache_key": true, "chat_completions": true, "interleaved_reasoning": false }
           },
