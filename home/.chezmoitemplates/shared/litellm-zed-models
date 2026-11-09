@@ -1,16 +1,4 @@
           {
-            "name": "qwen3.8-27b",
-            "max_tokens": 147456,
-            "max_output_tokens": 40960,
-            "capabilities": { "tools": true, "images": false, "parallel_tool_calls": true, "prompt_cache_key": false, "chat_completions": true, "interleaved_reasoning": false }
-          },
-          {
-            "name": "qwen3.8-27b-chat",
-            "max_tokens": 147456,
-            "max_output_tokens": 40960,
-            "capabilities": { "tools": true, "images": false, "parallel_tool_calls": true, "prompt_cache_key": false, "chat_completions": true, "interleaved_reasoning": false }
-          },
-          {
             "name": "qwen3.8-flash-next-chat",
             "max_tokens": 245760,
             "max_output_tokens": 16384,
@@ -18,7 +6,7 @@
           },
           {
             "name": "qwen3.8-flash-next",
-            "display_name": "Qwen3.8-Flash-Next IQ4_NL (Strix ROCm)",
+            "display_name": "Qwen3.8-Flash-Next (Strix + Strata)",
             "max_tokens": 245760,
             "max_output_tokens": 16384,
             "capabilities": { "tools": true, "images": true, "parallel_tool_calls": false, "prompt_cache_key": false, "chat_completions": true, "interleaved_reasoning": false }
@@ -81,7 +69,7 @@
           },
           {
             "name": "auto",
-            "max_tokens": 131072,
+            "max_tokens": 245760,
             "max_output_tokens": 16384,
             "capabilities": { "tools": true, "images": false, "parallel_tool_calls": false, "prompt_cache_key": false, "chat_completions": true, "interleaved_reasoning": false }
           }
