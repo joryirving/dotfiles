@@ -111,12 +111,13 @@
       "model": "auto",
     },
     // Zed has ONE global subagent model (no per-task choice like opencode), so it
-    // can't fan out to a cheap Go lane the way opencode's `explorer` does. Kept on
-    // nvidia: it is the fastest local lane (54s p95 vs 92-118s for the Strix lanes),
-    // though it is heavily contended by Foreman, so keep Zed subagent jobs bounded.
+    // can't fan out to cheap lanes the way opencode's `explorer` does. Bound to
+    // the flash-next group: Strata (IQ3_S on the 3090, 3 slots) with Strix
+    // overflow. The local pool is five sessions shared with Courier and Foreman,
+    // so keep Zed subagent jobs bounded.
     "subagent_model": {
       "provider": "LiteLLM",
-      "model": "qwen3.8-27b",
+      "model": "qwen3.8-flash-next",
     },
     // Commit-message path (Zed routes this around the agent panel; AGENTS.md covers the rest).
     "commit_message_instructions": "Conventional Commits: `type(scope): imperative summary`, lowercase, ~50 char subject. Add a body only if the why isn't obvious from the diff — a few tight lines, no walls, no filler adjectives, don't restate the diff.",
