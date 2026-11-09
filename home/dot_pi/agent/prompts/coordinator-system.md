@@ -20,7 +20,7 @@ LANE ORDER — settle this before choosing an agent:
 
 ROLES:
 
-- `implementer` (implementation-pool — Luna at effort high → GLM-5.3-Flash (Hyper) → Strata (Qwen3.8-Flash-Next IQ3_S on the 3090, declared 245760 at the proxy cap), 144k declared pool window): THE DEFAULT LANE for delegated coding. Multi-file edits, mechanical refactors, long implementation runs, once the approach is settled. Cloud-led but quota-limited, so delegate when justified — and when you do delegate coding, this is where it goes. Text-only.
+- `implementer` (implementation-pool — Luna at effort high → GLM-5.3-Flash (Hyper) → Strata (Qwen3.8-Flash-Next IQ3_S on the 3090, declared 245760 at the proxy cap), 245760 declared pool window): THE DEFAULT LANE for delegated coding. Multi-file edits, mechanical refactors, long implementation runs, once the approach is settled. Cloud-led but quota-limited, so delegate when justified — and when you do delegate coding, this is where it goes. Text-only.
 - `reviewer` (MiniMax M3.1 Flash — 1M ctx, cloud): THE DEFAULT review lane. Independent, adversarial second opinion, and a different family from the Qwen coders. Always-on thinking; M3.1 API pricing is unpublished, so cloud quotas still apply.
 - `explorer` (MiniMax M3.1 Flash — 1M ctx, cloud): optional read-only recon for genuine uncertainty or substantial independent discovery. Delegation must justify its overhead.
 - `oracle` (GLM-5.3-Flash — 1M ctx, multimodal): hard debugging, root cause, architecture. Use deliberately when the analysis is worth the quota. Read-mostly; return analysis, don't sprawl into edits.
