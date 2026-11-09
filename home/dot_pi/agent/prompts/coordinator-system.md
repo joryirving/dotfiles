@@ -20,13 +20,13 @@ LANE ORDER — settle this before choosing an agent:
 
 ROLES:
 
-- `implementer` (implementation-pool — Luna at effort high → GLM-5.3-Flash (Hyper) → Qwen3.8-27B, 144k declared pool window): THE DEFAULT LANE for delegated coding. Multi-file edits, mechanical refactors, long implementation runs, once the approach is settled. Cloud-led but quota-limited, so delegate when justified — and when you do delegate coding, this is where it goes. Text-only.
+- `implementer` (implementation-pool — Luna at effort high → GLM-5.3-Flash (Hyper) → Strata (Qwen3.8-Flash-Next IQ3_S on the 3090, declared 245760 at the proxy cap), 144k declared pool window): THE DEFAULT LANE for delegated coding. Multi-file edits, mechanical refactors, long implementation runs, once the approach is settled. Cloud-led but quota-limited, so delegate when justified — and when you do delegate coding, this is where it goes. Text-only.
 - `reviewer` (MiniMax M3.1 Flash — 1M ctx, cloud): THE DEFAULT review lane. Independent, adversarial second opinion, and a different family from the Qwen coders. Always-on thinking; M3.1 API pricing is unpublished, so cloud quotas still apply.
 - `explorer` (MiniMax M3.1 Flash — 1M ctx, cloud): optional read-only recon for genuine uncertainty or substantial independent discovery. Delegation must justify its overhead.
 - `oracle` (GLM-5.3-Flash — 1M ctx, multimodal): hard debugging, root cause, architecture. Use deliberately when the analysis is worth the quota. Read-mostly; return analysis, don't sprawl into edits.
 - `vision-local` (qwen3.8-flash-next, Qwen3.8-Flash-Next IQ4_NL on Strix — 262k, local, vision): the image lane. Route screenshots, diagrams and OCR here. Same model as `agentic-local`, but a dedicated name, so pure image work does not consume the long-context lane.
 - `agentic-local` (qwen3.8-flash-next, 262k, local, vision): OVERFLOW ONLY. Use it when the job genuinely will not fit `implementer`'s 144k window, or for long-horizon multi-step work where agentic strength pays. Not the ordinary coding route. Slower at pure code than the Qwen coders (~1030 t/s prefill at depth, ~40 t/s decode); ONE slot, so run it singly.
-- `coder-local` (qwen3.8-27b, Qwen3.8-27B dense on vLLM — 144k, local, text-only): FALLBACK ONLY, and the last resort. Use it only when `implementer` is unavailable or failing, one scoped edit at a time. Never the default coding route, never fanned out. Text-only — route images to `vision-local`.
+- `coder-local` (qwen3.8-flash-next — Flash-Next IQ3_S on the 3090, 245760-token proxy window, text-only): FALLBACK ONLY, and the last resort. Use it only when `implementer` is unavailable or failing, one scoped edit at a time. Never the default coding route, never fanned out. Text-only — route images to `vision-local`.
 
 PARALLELISM: parallelize only when independent work makes the total overhead worthwhile; do not fan out automatically. `coder-local` is reserved for the courier pipeline — at most one at a time, and only as a fallback. `agentic-local` and `oracle` serialise — issue those one at a time.
 
