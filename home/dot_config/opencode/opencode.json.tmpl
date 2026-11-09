@@ -103,7 +103,7 @@ the second opinion is worthless. */}}
       "model": "litellm-anthropic/MiniMax-M3.1-Flash"
     },
     "agentic-local": {
-      "description": "The single local sub-agent lane — Qwen3.8-Flash-Next (245760-token proxy window, text-only): bounded file-scoped implementation, reconnaissance, and review passes, at most two in flight on disjoint files. Shares the five local sessions (two on skirk, three on the 3090 strata-fn rung) with coordinator-local and the automated pipeline — watch contention rather than adding capacity. Route images to vision-local.",
+      "description": "The single local sub-agent lane — Qwen3.8-Flash-Next (245760-token proxy window; text-only by policy — the model is vision-capable but images go to vision-local): bounded file-scoped implementation, reconnaissance, and review passes, at most two in flight on disjoint files. Shares the five local sessions (two on skirk, three on the 3090 strata-fn rung) with coordinator-local and the automated pipeline — watch contention rather than adding capacity. Route images to vision-local.",
       "mode": "subagent",
       "model": "litellm/qwen3.8-flash-next"
     },
