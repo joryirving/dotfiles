@@ -114,12 +114,12 @@
     },
     "default_model": {
       "provider": "anthropic",
-      "model": "auto",
+      "model": "MiniMax-M3.1-Flash",
     },
     // Zed has ONE global subagent model (no per-task choice like opencode), so it
     // can't fan out to cheap lanes the way opencode's `explorer` does. Bound to
-    // the flash-next group: Strata (IQ3_S on the 3090, 3 slots) with Strix
-    // overflow. The local pool is five sessions shared with Courier and Foreman,
+    // the flash-next group: Strata (UD-IQ4_XS on the 3090, 2 slots) with Strix
+    // overflow. The local pool is four sessions shared with Courier and Foreman,
     // so keep Zed subagent jobs bounded.
     "subagent_model": {
       "provider": "LiteLLM",
