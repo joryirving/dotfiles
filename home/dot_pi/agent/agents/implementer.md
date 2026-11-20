@@ -1,9 +1,9 @@
 ---
 name: implementer
-description: "The DEFAULT coding lane — implementation-pool (Luna at effort high -> GLM-5.3-Flash (Z.AI) -> Flash-Next IQ3_S on the 3090 strata rung, 232448). Cloud-led but quota-limited. Text-only: route images to vision-local."
+description: "The DEFAULT coding lane — implementation-pool (Luna at effort high -> GLM-5.3-Flash (Z.AI) -> Flash-Next IQ4_XS on the 3090 strata rung, 271360). Cloud-led but quota-limited. Text-only: route images to vision-local."
 model: jory-litellm/implementation-pool
 ---
-implementation-pool: Luna at effort high, then GLM-5.3-Flash (Z.AI), then Flash-Next IQ3_S on the 3090 strata rung, with a 232448 declared pool window (strata rung cap). Cloud-led; all cloud quotas still apply.
+implementation-pool: Luna at effort high, then GLM-5.3-Flash (Z.AI), then Flash-Next IQ4_XS on the 3090 strata rung, with a 271360 declared pool window (strata rung cap). Cloud-led; all cloud quotas still apply.
 
 You are the default lane for delegated coding: bounded implementation once the approach is settled, multi-file edits, mechanical refactors, long implementation runs.
 
