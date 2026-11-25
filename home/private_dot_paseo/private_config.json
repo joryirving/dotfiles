@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "daemon": {
+    "listen": "127.0.0.1:6767",
+    "mcp": {
+      "injectIntoAgents": true
+    },
+    "browserTools": {
+      "enabled": true
+    },
+    "autoArchiveAfterMerge": true,
+    "terminalProfiles": [
+      {
+        "id": "pi",
+        "name": "Pi",
+        "command": "pi",
+        "args": [
+          "{{{prompt}}}"
+        ],
+        "icon": "pi"
+      },
+      {
+        "id": "opencode",
+        "name": "OpenCode",
+        "command": "opencode",
+        "args": [
+          "--prompt={{{prompt}}}"
+        ],
+        "icon": "opencode"
+      },
+      {
+        "id": "codex",
+        "name": "Codex",
+        "command": "codex",
+        "args": [
+          "{{{prompt}}}"
+        ],
+        "icon": "codex"
+      },
+      {
+        "id": "claude",
+        "name": "Claude Code",
+        "command": "claude",
+        "args": [
+          "{{{prompt}}}"
+        ],
+        "icon": "claude"
+      }
+    ],
+    "cors": {
+      "allowedOrigins": [
+        "https://app.paseo.sh"
+      ]
+    },
+    "relay": {
+      "enabled": true
+    }
+  },
+  "app": {
+    "baseUrl": "https://app.paseo.sh"
+  },
+  "pluginsEnabled": true,
+  "plugins": {
+    "better-paseo": {
+      "source": "directory",
+      "path": "/Users/joryirving/.paseo/plugins/better-paseo/6a1efb94-13da-4e37-b47f-a87257f89878/checkout",
+      "enabled": true
+    },
+    "genui": {
+      "source": "directory",
+      "path": "/Users/joryirving/.paseo/plugins/genui/7f7168fb-6b06-4490-b374-1eb08150bf7c/node_modules/paseo-plugin-genui",
+      "enabled": true
+    },
+    "host-monitor": {
+      "source": "directory",
+      "path": "/Users/joryirving/.paseo/plugins/host-monitor/ce01f90f-deb0-460b-b3c0-cb5e6cf8d5fb/checkout/plugins/host-monitor",
+      "enabled": true
+    },
+    "progress": {
+      "source": "directory",
+      "path": "/Users/joryirving/.paseo/plugins/progress/9c2c3b3e-5254-4682-a329-07bbc347ae2b/node_modules/@stevecastaneda/paseo-progress",
+      "enabled": true
+    }
+  },
+  "agents": {
+    "providers": {
+      "claude": {
+        "enabled": false
+      },
+      "copilot": {
+        "enabled": false
+      },
+      "opencode": {
+        "enabled": true,
+        "env": {
+          "XDG_STATE_HOME": "/Users/joryirving/.paseo/opencode-state"
+        }
+      },
+      "pi": {
+        "enabled": true
+      },
+      "glm-acp-agent": {
+        "extends": "acp",
+        "label": "GLM Agent",
+        "description": "ACP agent powered by Zhipu AI's GLM Coding Plan models (glm-5.3, glm-5.3-flash, glm-5-turbo, glm-4.7). Supports streaming, tool calls, mid-session model switching, image input via Z.AI Coding Plan Vision MCP, and session load/fork/resume with on-disk persistence.",
+        "command": [
+          "npx",
+          "-y",
+          "glm-acp-agent@1.15.0"
+        ],
+        "env": {}
+      }
+    }
+  }
+}
