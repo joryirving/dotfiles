@@ -91,10 +91,10 @@
         "enabled": false
       },
       "opencode": {
-        "enabled": true,
         "env": {
           "XDG_STATE_HOME": "/Users/joryirving/.paseo/opencode-state"
-        }
+        },
+        "enabled": true
       },
       "pi": {
         "enabled": true
